@@ -4,8 +4,7 @@ env:
   SLNNAME: Smoerfugl._build
   SLNPATH: _build.sln
 
-on:
-  push: paths
+on: push
 
 jobs:
   build:
