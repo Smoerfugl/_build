@@ -5,9 +5,7 @@ env:
   SLNPATH: _build.sln
 
 on:
-  push:
-    paths:
-      - "*"
+  push: paths
 
 jobs:
   build:
