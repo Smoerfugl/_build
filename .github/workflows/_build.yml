@@ -1,0 +1,30 @@
+name: _build
+
+env:
+  SLNNAME: Smoerfugl._build
+  SLNPATH: ./Smoerfugl._build/_build.sln
+
+on:
+  push:
+    paths:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: |
+            3.1.x
+            6.0.x
+
+      - run: |
+          dotnet restore ${{ env.SLNNAME }}
+          dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
+          dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }}
+        working-directory: ${{ env.SLNPATH }}
