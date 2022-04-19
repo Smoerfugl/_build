@@ -2,7 +2,7 @@ name: _build
 
 env:
   SLNNAME: Smoerfugl._build
-  SLNPATH: ./Smoerfugl._build/_build.sln
+  SLNPATH: ./_build.sln
 
 on:
   push:
