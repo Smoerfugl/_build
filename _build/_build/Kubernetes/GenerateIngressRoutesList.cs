@@ -30,7 +30,7 @@ public class GenerateIngressRoutesRoutesList : IGenerateIngressRoutesList
             {
                 Name = service.Name,
                 Hostname = $"{service.Hostname}.{domainValue}",
-                Namespace = pipelineObject.NamespacePartial,
+                Namespace = pipelineObject.Name,
                 Port = service.ServicePort.Value,
                 ServiceName = service.Name
             }.Invoke();

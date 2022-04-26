@@ -15,7 +15,7 @@ public class GenerateIngressListTests
         var pipeline = new Pipeline()
         {
             Registry = "some.registry",
-            NamespacePartial = "testSolution",
+            Name = "testSolution",
             Services = new List<PipelineService>()
             {
                 new PipelineService()

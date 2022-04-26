@@ -69,7 +69,7 @@ void AddTargets(ParseResult cmdLine)
 
             var ingressRoutes = new GenerateIngressRoutesRoutesList().Invoke(pipelineObject, domainValue);
             var certificates = new GenerateCertificates().Invoke(ingressRoutes);
-            var @namespace = new GenerateNamespace(pipelineObject.NamespacePartial).Invoke();
+            var @namespace = new GenerateNamespace(pipelineObject.Name).Invoke();
 
             var yaml = K8sYaml.SerializeToMultipleObjects(ingressRoutes, certificates, @namespace);
 

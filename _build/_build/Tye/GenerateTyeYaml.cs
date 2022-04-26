@@ -40,8 +40,8 @@ public class GenerateTyeYaml : IGenerateTyeYaml
 
         var tyeFile = new TyeConfig()
         {
-            Name = "Hejs",
-            Namespace = $"{Env.ToString().ToLower()}-hejs",
+            Name = _pipelineObject.Name,
+            Namespace = $"{Env.ToString().ToLower()}-{_pipelineObject.Name}",
             Registry = _pipelineObject.Registry,
             Services = services
         };
