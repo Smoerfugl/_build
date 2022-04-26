@@ -24,15 +24,15 @@ jobs:
       - run: |
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
-          mkdir /test_output
-          dotnet test --no-restore --verbosity normal --logger "trx;LogFileName=/test_output/test_results.trx" ${{ env.SLNNAME }}
+          mkdir /home/runner/work/test_output
+          dotnet test --no-restore --verbosity normal --logger "trx;LogFileName=/home/runner/work/test_output/test_results.trx" ${{ env.SLNNAME }}
         working-directory: ${{ env.SLNPATH }}
       
       - name: Tests
         if: ${{ !cancelled() }}
         uses: zyborg/dotnet-tests-report@v1
         with:
-          test_results_path: /test_output
+          test_results_path: /home/runner/work/test_output/test_results.trx
           report_name: Tests
           report_title: Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: /test_output
+          path: /home/runner/work/test_output
