@@ -2,7 +2,11 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace Build.Tye;
 
-public class GenerateTyeYaml
+public interface IGenerateTyeYaml
+{
+    TyeConfigGenerator Invoke();
+}
+public class GenerateTyeYaml : IGenerateTyeYaml
 {
     private readonly Pipeline.Pipeline _pipelineObject;
 

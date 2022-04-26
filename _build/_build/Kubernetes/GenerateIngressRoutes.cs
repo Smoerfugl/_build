@@ -3,9 +3,14 @@ using IdentityModel.Client;
 
 namespace Build.Kubernetes;
 
-public class GenerateIngressRoutes
+public interface IGenerateIngressRoutes
 {
-    public List<IngressRoute> Invoke()
+    IEnumerable<IngressRoute> Invoke();
+}
+
+public class GenerateIngressRoutes : IGenerateIngressRoutes
+{
+    public IEnumerable<IngressRoute> Invoke()
     {
         var @namespace = @Namespace;
         var web = new IngressRouteBuilder()
