@@ -28,12 +28,14 @@ jobs:
         working-directory: ${{ env.SLNPATH }}
       
       # Using the trx-parser action
-      - name: Parse Trx files
-        uses: NasAmin/trx-parser@v0.2.0
+      - name: Test Reporter
+        uses: dorny/test-reporter@v1.5.0
         id: trx-parser
         with:
-          TRX_PATH: ${{ github.workspace }}/TestResults #This should be the path to your TRX files
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: Tests
+          path: ${{ github.workspace }}/TestResults #This should be the path to your TRX files
+          reporter: "dotnet-trx"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: artifacts
         uses: actions/upload-artifact@v2
