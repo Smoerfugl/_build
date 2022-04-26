@@ -25,13 +25,18 @@ jobs:
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
           dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }} --logger "trx;LogFileName=/tmp/testresults.trx"
         working-directory: ${{ env.SLNPATH }}
-
-
+      
       - name: Tests
         if: ${{ !cancelled() }}
         uses: zyborg/dotnet-tests-report@v1
         with:
-          trx_xsl_path: /tmp/testresults.trx
+          test_results_path: /tmp/testresults.trx
           report_name: Tests
           report_title: Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: /tmp
