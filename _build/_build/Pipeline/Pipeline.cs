@@ -7,6 +7,7 @@ public class Pipeline
     public string Registry { get; set; } = null!;
     public List<PipelineService> Services { get; set; } = new();
     public Dictionary<string, List<EnvironmentVariable>> EnvironmentVariables { get; set; } = new();
+    public string NamespacePartial { get; set; } = null!;
 }
 
 public class PipelineService

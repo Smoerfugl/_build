@@ -1,6 +1,6 @@
 namespace Build.Tye;
 
-public class TyeConfigGenerator
+public class TyeConfig
 {
     public string? Name { get; set; }
     public string? Registry { get; set; }

@@ -64,16 +64,14 @@ void AddTargets(ParseResult cmdLine)
         DependsOn("GenerateTye"),
         () =>
         {
-            var tyeFile = File.ReadAllText("tye.yaml");
-            var tyeObject = serializer.Deserialize<TyeConfigGenerator>(tyeFile);
-
             var pipelineFile = File.ReadAllText("pipeline.yml");
             var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
 
-            var objects = new GenerateIngressFile(tyeObject, pipelineObject, domainValue)
-                .Invoke();
+            var ingressRoutes = new GenerateIngressRoutesRoutesList().Invoke(pipelineObject, domainValue);
+            var certificates = new GenerateCertificates().Invoke(ingressRoutes);
+            var @namespace = new GenerateNamespace(pipelineObject.NamespacePartial).Invoke();
 
-            var yaml = K8sYaml.SerializeToMultipleObjects(objects);
+            var yaml = K8sYaml.SerializeToMultipleObjects(ingressRoutes, certificates, @namespace);
 
             File.WriteAllText("ingress.yml", yaml);
         });

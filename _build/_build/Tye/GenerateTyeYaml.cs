@@ -4,7 +4,7 @@ namespace Build.Tye;
 
 public interface IGenerateTyeYaml
 {
-    TyeConfigGenerator Invoke();
+    TyeConfig Invoke();
 }
 public class GenerateTyeYaml : IGenerateTyeYaml
 {
@@ -20,7 +20,7 @@ public class GenerateTyeYaml : IGenerateTyeYaml
     public Env Env { get; set; }
     public string? _envKey;
 
-    public TyeConfigGenerator Invoke()
+    public TyeConfig Invoke()
     {
         Console.WriteLine($"Generating Configuration for {Env.ToString().ToLower()}");
 
@@ -38,7 +38,7 @@ public class GenerateTyeYaml : IGenerateTyeYaml
             Replicas = p.Replicas
         }).ToList();
 
-        var tyeFile = new TyeConfigGenerator()
+        var tyeFile = new TyeConfig()
         {
             Name = "Hejs",
             Namespace = $"{Env.ToString().ToLower()}-hejs",
