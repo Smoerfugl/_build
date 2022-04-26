@@ -33,7 +33,7 @@ jobs:
         id: trx-parser
         with:
           name: Tests
-          path: ${{ github.workspace }}/TestResults #This should be the path to your TRX files
+          path: ${{ github.workspace }}/TestResults/*.trx #This should be the path to your TRX files
           reporter: dotnet-trx
           token: ${{ secrets.GITHUB_TOKEN }}
 
