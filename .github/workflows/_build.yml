@@ -24,8 +24,8 @@ jobs:
       - run: |
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
-          mkdir ~/tmp
-          dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }} --logger "trx;LogFileName=${TEST_OUTPUT_FILE}"
+          mkdir ~/test_output
+          dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }} --logger "trx;LogFileName=/_build/test_output/test_results.trx"
         working-directory: ${{ env.SLNPATH }}
       
       - name: Tests
