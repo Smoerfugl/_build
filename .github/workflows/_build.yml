@@ -31,7 +31,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: zyborg/dotnet-tests-report@v1
         with:
-          test_results_path: /tmp/testresults.trx
+          trx_xsl_path: /tmp/testresults.trx
           report_name: Tests
           report_title: Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
