@@ -1,7 +1,6 @@
-using System.Runtime.CompilerServices;
 using k8s.Models;
 
-namespace Build.Kubernetes;
+namespace Build.Kubernetes.Builders;
 
 public class NamespaceBuilder
 {

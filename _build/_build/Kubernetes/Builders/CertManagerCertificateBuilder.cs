@@ -1,7 +1,7 @@
 using k8s.Models;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Build.Kubernetes;
+namespace Build.Kubernetes.Builders;
 
 public class CertManagerCertificateBuilder
 {

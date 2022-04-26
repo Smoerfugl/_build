@@ -1,6 +1,6 @@
 using k8s.Models;
 
-namespace Build.Kubernetes;
+namespace Build.Kubernetes.Builders;
 
 public class IngressRouteBuilder
 {
