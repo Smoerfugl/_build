@@ -3,8 +3,7 @@ name: _build
 env:
   SLNNAME: Smoerfugl._build.sln
   SLNPATH: _build
-  TEST_OUTPUT_DIR: /test_output
-  TEST_OUTPUT_FILE: /test_output/test_results.trx
+
 on: push
 
 jobs:
@@ -24,21 +23,20 @@ jobs:
       - run: |
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
-          mkdir /home/runner/work/test_output
-          dotnet test --no-restore --verbosity normal --logger "trx;LogFileName=/home/runner/work/test_output/test_results.trx" ${{ env.SLNNAME }}
+          mkdir -p ${{ github.workspace}/TestResults
+          dotnet test --no-restore --verbosity normal --logger trx --results-directory ${{ github.workspace }}/TestResults ${{ env.SLNNAME }}
         working-directory: ${{ env.SLNPATH }}
       
-      - name: Tests
-        if: ${{ !cancelled() }}
-        uses: zyborg/dotnet-tests-report@v1
+      # Using the trx-parser action
+      - name: Parse Trx files
+        uses: NasAmin/trx-parser@v0.1
+        id: trx-parser
         with:
-          test_results_path: /home/runner/work/test_output/test_results.trx
-          report_name: Tests
-          report_title: Tests
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          TRX_PATH: ${{ github.workspace }}/TestResults #This should be the path to your TRX files
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: artifacts
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: /home/runner/work/test_output
+          path: ${{ github.workspace }}/TestResults
