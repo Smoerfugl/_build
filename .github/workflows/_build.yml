@@ -27,13 +27,12 @@ jobs:
           dotnet test --no-restore --logger trx --results-directory ${{ github.workspace }}/TestResults ${{ env.SLNNAME }}
         working-directory: ${{ env.SLNPATH }}
       
-      # Using the trx-parser action
       - name: Test Reporter
         uses: dorny/test-reporter@v1.5.0
         id: trx-parser
         with:
           name: Tests
-          path: ${{ github.workspace }}/TestResults/*.trx #This should be the path to your TRX files
+          path: ${{ github.workspace }}/TestResults/*.trx
           reporter: dotnet-trx
           token: ${{ secrets.GITHUB_TOKEN }}
 
