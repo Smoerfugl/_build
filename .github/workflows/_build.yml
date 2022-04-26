@@ -2,7 +2,7 @@ name: _build
 
 env:
   SLNNAME: _build.sln
-  SLNPATH: _build/_build
+  SLNPATH: _build
 
 on: push
 
