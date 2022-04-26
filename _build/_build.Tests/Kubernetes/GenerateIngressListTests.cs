@@ -10,7 +10,7 @@ namespace _build.Tests.Kubernetes;
 public class GenerateIngressListTests
 {
     [Fact]
-    public void Foo()
+    public void GenerateIngressRutesList_GivenPipelineObject_ShouldReturnTwoIngressRoutes()
     {
         var pipeline = new Pipeline()
         {
