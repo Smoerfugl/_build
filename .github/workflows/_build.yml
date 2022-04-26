@@ -3,7 +3,8 @@ name: _build
 env:
   SLNNAME: Smoerfugl._build.sln
   SLNPATH: _build
-
+  TEST_OUTPUT_DIR: _build/test_output
+  TEST_OUTPUT_FILE: _build/test_output/test_results.trx
 on: push
 
 jobs:
@@ -24,14 +25,14 @@ jobs:
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
           mkdir ~/tmp
-          dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }} --logger "trx;LogFileName=~/tmp/testresults.trx"
+          dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }} --logger "trx;LogFileName=${TEST_OUTPUT_FILE}"
         working-directory: ${{ env.SLNPATH }}
       
       - name: Tests
         if: ${{ !cancelled() }}
         uses: zyborg/dotnet-tests-report@v1
         with:
-          test_results_path: ~/tmp/testresults.trx
+          test_results_path: ${TEST_OUTPUT_DIR}
           report_name: Tests
           report_title: Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -40,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: ~/tmp
+          path: ${TEST_OUTPUT_DIR}
