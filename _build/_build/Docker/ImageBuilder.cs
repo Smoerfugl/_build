@@ -35,12 +35,8 @@ public class ImageBuilder : IImageBuilder
 
     public async Task<List<string?>> BuildImage(ImageBuilderParams imageBuilderParams)
     {
-        var contextDirectory = Environment.CurrentDirectory;
-
-
         var startInfo = new ProcessStartInfo("docker")
         {
-            // WorkingDirectory = contextDirectory,
             UseShellExecute = false,
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
