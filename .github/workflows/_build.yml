@@ -23,7 +23,7 @@ jobs:
       - run: |
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
-          dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }}
+          dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }} --logger "trx;LogFileName=testresults.trx"
         working-directory: ${{ env.SLNPATH }}
 
 
@@ -31,7 +31,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: ./
         with:
-          project_path: _build
+          test_results_path: testresults.trx
           report_name: Tests
           report_title: Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
