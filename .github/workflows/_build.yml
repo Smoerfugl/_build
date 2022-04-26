@@ -32,7 +32,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: zyborg/dotnet-tests-report@v1
         with:
-          test_results_path: ${TEST_OUTPUT_DIR}
+          test_results_path: _build/test_output
           report_name: Tests
           report_title: Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: ${TEST_OUTPUT_DIR}
+          path: _build/test_output
