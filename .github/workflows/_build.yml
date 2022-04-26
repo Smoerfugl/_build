@@ -1,7 +1,7 @@
 name: _build
 
 env:
-  SLNNAME: _build.sln
+  SLNNAME: Smoerfugl._build.sln
   SLNPATH: _build
 
 on: push
@@ -21,8 +21,6 @@ jobs:
             6.0.x
 
       - run: |
-          pwd
-          ls
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
           dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }}
