@@ -30,7 +30,7 @@ jobs:
 
       - name: Tests
         if: ${{ !cancelled() }}
-        uses: ./
+        uses: zyborg/dotnet-tests-report@v1
         with:
           test_results_path: /output/testresults.trx
           report_name: Tests
