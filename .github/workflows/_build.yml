@@ -23,7 +23,7 @@ jobs:
       - run: |
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
-          mkdir -p ${{ github.workspace}/TestResults
+          mkdir -p ${{ github.workspace }}/TestResults
           dotnet test --no-restore --verbosity normal --logger trx --results-directory ${{ github.workspace }}/TestResults ${{ env.SLNNAME }}
         working-directory: ${{ env.SLNPATH }}
       
