@@ -24,7 +24,7 @@ jobs:
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
           mkdir -p ${{ github.workspace }}/TestResults
-          dotnet test --no-restore --verbosity normal --logger trx --results-directory ${{ github.workspace }}/TestResults ${{ env.SLNNAME }}
+          dotnet test --no-restore --logger trx --results-directory ${{ github.workspace }}/TestResults ${{ env.SLNNAME }}
         working-directory: ${{ env.SLNPATH }}
       
       # Using the trx-parser action
@@ -34,7 +34,7 @@ jobs:
         with:
           name: Tests
           path: ${{ github.workspace }}/TestResults #This should be the path to your TRX files
-          reporter: "dotnet-trx"
+          reporter: dotnet-trx
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: artifacts
