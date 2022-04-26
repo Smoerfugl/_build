@@ -23,6 +23,21 @@ public class GenerateIngressFile : IGenerateIngressFile
     public List<object> Invoke()
     {
         var objects = new List<object>();
+        var ingressRoutes = GetIngressRoutes();
+
+        var routes = GetHttpsRoutes(ingressRoutes);
+        objects.AddRange(ingressRoutes);
+
+        var certificates = CreateCertificates(routes);
+        objects.AddRange(certificates);
+
+        objects.Add(new GenerateNamespace(TyeObject.Namespace).Invoke());
+
+        return objects;
+    }
+
+    private List<IngressRoute> GetIngressRoutes()
+    {
         var ingressRoutes = new List<IngressRoute>();
         PipelineObject.Services.ForEach(service =>
         {
@@ -48,31 +63,29 @@ public class GenerateIngressFile : IGenerateIngressFile
 
             ingressRoutes.AddRange(routes);
         });
+        return ingressRoutes;
+    }
 
+    private static IEnumerable<IngressRoute> GetHttpsRoutes(IEnumerable<IngressRoute> ingressRoutes)
+    {
         var routes = ingressRoutes.Where(d =>
             d.Spec.Entrypoints.Contains(
                 Entrypoint.Secure.ToString().ToLower()
             )
         ).ToList();
-        routes.ForEach();
-        foreach (var route in routes)
-        {
-            if (route.Spec.Tls == null)
-            {
-                continue;
-            }
-
-            var cert = CreateCert(route);
-            objects.Add(cert);
-        }
-
-        objects.AddRange(ingressRoutes);
-        objects.Add(new GenerateNamespace(TyeObject.Namespace).Invoke());
-
-        return objects;
+        return routes;
     }
 
-    private CertManagerCertificate CreateCert(IngressRoute route)
+    private static IEnumerable<CertManagerCertificate> CreateCertificates(IEnumerable<IngressRoute> routes)
+    {
+        var certificates = routes
+            .Where(d => d.Spec.Tls != null)
+            .Select(CreateCert)
+            .ToList();
+        return certificates;
+    }
+
+    private static CertManagerCertificate CreateCert(IngressRoute route)
     {
             var cert = new CertManagerCertificateBuilder()
                 .WithName(route.Metadata.Name)
