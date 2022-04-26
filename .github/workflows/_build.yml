@@ -25,3 +25,13 @@ jobs:
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
           dotnet test --no-restore --verbosity normal ${{ env.SLNNAME }}
         working-directory: ${{ env.SLNPATH }}
+
+
+      - name: Tests
+        if: ${{ !cancelled() }}
+        uses: ./
+        with:
+          project_path: _build
+          report_name: Tests
+          report_title: Tests
+          github_token: ${{ secrets.GITHUB_TOKEN }}
