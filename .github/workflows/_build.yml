@@ -31,7 +31,7 @@ jobs:
         uses: dorny/test-reporter@v1.5.0
         id: trx-parser
         with:
-          name: Tests
+          name: Test report
           path: ${{ github.workspace }}/TestResults/*.trx
           reporter: dotnet-trx
           token: ${{ secrets.GITHUB_TOKEN }}
