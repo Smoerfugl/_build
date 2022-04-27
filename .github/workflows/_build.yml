@@ -20,7 +20,14 @@ jobs:
             3.1.x
             6.0.x
 
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.13
+        with:
+          versionSpec: '5.x'
+
       - run: |
+          dotnet-gitversion /updateprojectfiles
+
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
           mkdir -p ${{ github.workspace }}/TestResults
