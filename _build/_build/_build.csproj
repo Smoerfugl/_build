@@ -9,7 +9,7 @@
         <PackageId>Smoerfugl._build</PackageId>
 
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>butterbuild</ToolCommandName>
+        <ToolCommandName>_build</ToolCommandName>
         <PackageOutputPath>./output</PackageOutputPath>
     </PropertyGroup>
 
