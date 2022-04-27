@@ -31,20 +31,21 @@ jobs:
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
           mkdir -p ${{ github.workspace }}/TestResults
-          dotnet test --no-restore --logger trx --results-directory ${{ github.workspace }}/TestResults ${{ env.SLNNAME }}
+          dotnet test --no-restore --logger trx --results-directory /tmp/TestResults ${{ env.SLNNAME }}
         working-directory: ${{ env.SLNPATH }}
-      
+
       - name: Test Reporter
         uses: dorny/test-reporter@v1.5.0
         id: trx-parser
         with:
           name: Test report
-          path: ${{ github.workspace }}/TestResults/*.trx
+          path: /tmp/TestResults/*.trx
           reporter: dotnet-trx
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts
-          path: ${{ github.workspace }}/TestResults
+          path: /tmp/TestResults
+
