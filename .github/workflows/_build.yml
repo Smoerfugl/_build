@@ -50,7 +50,7 @@ jobs:
           path: /tmp/TestResults
 
       - name: Publish
-        run: dotnet pack ${{ env.SLNNAME }} -c Release --no-build -o /tmp/nuget/ -p:PackageVersion=${{ steps.gitversion.outputs.SemVer }}
+        run: dotnet pack ${{ env.SLNNAME }} -c Release --no-build -o /tmp/nuget/
         working-directory: ${{ env.SLNPATH }}
 
       - name: Upload .pkg artifacts
