@@ -1,6 +1,6 @@
-using Build.Tye;
+using Build.Environments;
 
-namespace Build.Pipeline;
+namespace Build.Pipelines;
 
 public class Pipeline
 {

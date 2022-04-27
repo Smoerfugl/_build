@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Build.Kubernetes;
-using Build.Pipeline;
-using Build.Tye;
+using Build.Pipelines;
+using Build.Environments;
 using FluentAssertions;
 using Xunit;
 

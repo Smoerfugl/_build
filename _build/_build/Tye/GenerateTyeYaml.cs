@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices.ComTypes;
 
-namespace Build.Tye;
+namespace Build.Environments;
 
 public interface IGenerateTyeYaml
 {
@@ -8,9 +8,9 @@ public interface IGenerateTyeYaml
 }
 public class GenerateTyeYaml : IGenerateTyeYaml
 {
-    private readonly Pipeline.Pipeline _pipelineObject;
+    private readonly Pipelines.Pipeline _pipelineObject;
 
-    public GenerateTyeYaml(Env env, Pipeline.Pipeline pipelineObject)
+    public GenerateTyeYaml(Env env, Pipelines.Pipeline pipelineObject)
     {
         _pipelineObject = pipelineObject;
         Env = env;
@@ -64,11 +64,4 @@ public class GenerateTyeYaml : IGenerateTyeYaml
             );
         return key;
     }
-}
-
-public enum Env
-{
-    Development,
-    Staging,
-    Production
 }
