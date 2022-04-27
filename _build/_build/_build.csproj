@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Build</RootNamespace>
+        <PackageId>Smoerfugl._build</PackageId>
 
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>butterbuild</ToolCommandName>
