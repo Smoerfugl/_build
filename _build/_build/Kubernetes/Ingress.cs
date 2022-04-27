@@ -72,10 +72,3 @@ public class IngressRouteSpecTls
 
     public string SecretName { get; set; }
 }
-
-public class Deployment
-{
-    public string Kind { get; set; } = "Deployment";
-    public string ApiVersion { get; set; } = "apps/v1";
-    public Dictionary<object, string> Metadata { get; set; } = new();
-}
