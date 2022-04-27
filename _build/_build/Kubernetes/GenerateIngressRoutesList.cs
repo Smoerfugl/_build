@@ -21,7 +21,7 @@ public class GenerateIngressRoutesRoutesList : IGenerateIngressRoutesList
         var ingressRoutes = new List<IngressRoute>();
         pipelineObject.Services.ForEach(service =>
         {
-            if (service.ServicePort == null)
+            if (service.Hostname == null)
             {
                 return;
             }
@@ -31,7 +31,7 @@ public class GenerateIngressRoutesRoutesList : IGenerateIngressRoutesList
                 Name = service.Name,
                 Hostname = $"{service.Hostname}.{domainValue}",
                 Namespace = pipelineObject.Name,
-                Port = service.ServicePort.Value,
+                Port = service.ServicePort,
                 ServiceName = service.Name
             }.Invoke();
 
