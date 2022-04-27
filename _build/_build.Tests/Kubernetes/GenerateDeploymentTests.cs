@@ -56,6 +56,5 @@ public class GenerateDeploymentTests
         deployments.Should().NotBeNullOrEmpty();
         deployments.Count.Should().Be(1);
         deployments.First().Spec.Replicas.Should().Be(pipeline.Services.First().Replicas);
-        deployments.Should().BeEmpty();
     }
 }
