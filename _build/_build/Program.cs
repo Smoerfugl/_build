@@ -19,13 +19,15 @@ var environmentOption = new Option<string>(new[] { "--environment", "-e" }, () =
     "The environment to use for the build");
 var domainOption = new Option<string>(new[] { "--domain" }, () => "localhost",
     "The domain to use for the build");
+var outputPath = new Option<string>(new[] { "--output", "-o" }, () => "./kube.yml");
 AddOptions(cmd);
 
 
-void AddOptions(RootCommand rootCommand)
+void AddOptions(Command rootCommand)
 {
     rootCommand.Add(environmentOption);
     rootCommand.Add(domainOption);
+    rootCommand.Add(outputPath);
 }
 
 cmd.Add(new Argument("targets")
@@ -43,6 +45,8 @@ void AddTargets(ParseResult cmdLine)
 {
     var environmentValue = cmdLine.CommandResult.GetValueForOption(environmentOption)!;
     var domainValue = cmdLine.CommandResult.GetValueForOption(domainOption)!;
+    var outputPathValue = cmdLine.CommandResult.GetValueForOption(outputPath)!;
+    var objects = new List<object>();
     Target("default",
         () => Console.WriteLine(environmentValue));
 
@@ -71,24 +75,19 @@ void AddTargets(ParseResult cmdLine)
             var certificates = new GenerateCertificates().Invoke(ingressRoutes);
             var @namespace = new GenerateNamespace(pipelineObject.Name).Invoke();
 
-            var yaml = K8sYaml.SerializeToMultipleObjects(ingressRoutes, certificates, @namespace);
-
-            File.WriteAllText("ingress.yml", yaml);
+            objects.AddRange(ingressRoutes);
+            objects.AddRange(certificates);
+            objects.Add(@namespace);
         });
 
-    Target("GenerateDeployment", "Generate Deployment.yaml file",
-        DependsOn("GenerateTye"),
-        () =>
-        {
-            var pipelineFile = File.ReadAllText("pipeline.yml");
-            var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
+    Target("GenerateDeployment", "Generate Deployment.yaml file", () =>
+    {
+        var pipelineFile = File.ReadAllText("pipeline.yml");
+        var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
 
-            var deployment = new GenerateDeployments().Invoke(pipelineObject, environmentValue.ToEnum<Env>());
-
-            var yaml = K8sYaml.SerializeToMultipleObjects(deployment);
-
-            File.WriteAllText("deployment.yml", yaml);
-        });
+        var deployment = new GenerateDeployments().Invoke(pipelineObject, environmentValue.ToEnum<Env>());
+        objects.Add(deployment);
+    });
 
     Target("Build", "Build docker image", () =>
     {
@@ -98,17 +97,29 @@ void AddTargets(ParseResult cmdLine)
         //     Tag = ""
         // }, new AuthConfig(), new Progress<JSONMessage>())
     });
+
+    Target("WriteToFile", "Write objects to file", () =>
+    {
+        var yaml = K8sYaml.SerializeToMultipleObjects(objects);
+        File.WriteAllText(outputPathValue, yaml);
+    });
 }
 
 cmd.SetHandler(async () =>
 {
     // translate from System.CommandLine to Bullseye
     var cmdLine = cmd.Parse(args);
-    var targets = cmdLine.CommandResult.Tokens.Select(token => token.Value);
+
+    var targets = cmdLine.CommandResult.Tokens.Select(token => token.Value).ToList();
+    if (targets.Count == 0)
+    {
+        targets.Add("WriteToFile");
+    }
+
     var options = new Options(Options.Definitions.Select(d => (d.Aliases[0],
         cmdLine.GetValueForOption(
             cmd.Options.OfType<Option<bool>>().Single(o => o.HasAlias(d.Aliases[0]))
-            )))
+        )))
     );
 
     AddTargets(cmdLine);
