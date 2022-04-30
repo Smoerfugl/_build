@@ -25,8 +25,8 @@ public class GenerateDeployments : IGenerateDeployments
         return deployments;
     }
     
-    private V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
-        List<EnvironmentVariable> environmentVariables)
+    private static V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
+        IEnumerable<EnvironmentVariable> environmentVariables)
     {
         var deployment = new V1Deployment()
         {
@@ -84,7 +84,7 @@ public class GenerateDeployments : IGenerateDeployments
         return deployment;
     }
 
-    private List<V1EnvVar> GetEnvVars(IEnumerable<EnvironmentVariable> environmentVariables)
+    private static List<V1EnvVar> GetEnvVars(IEnumerable<EnvironmentVariable> environmentVariables)
     {
         var envVars = environmentVariables.Select(e => new V1EnvVar()
         {
@@ -94,7 +94,7 @@ public class GenerateDeployments : IGenerateDeployments
         return envVars;
     }
 
-    private Dictionary<string, ResourceQuantity> GetResourceLimits(Dictionary<ResourceUnits, string> limits)
+    private static Dictionary<string, ResourceQuantity> GetResourceLimits(Dictionary<ResourceUnits, string> limits)
     {
         var resourceQuantities =
             limits
