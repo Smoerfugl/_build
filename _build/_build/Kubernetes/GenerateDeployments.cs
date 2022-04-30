@@ -18,11 +18,6 @@ public class GenerateDeployments : IGenerateDeployments
         var key = pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
             string.Equals(d, env.ToString(), StringComparison.CurrentCultureIgnoreCase));
 
-        if (key != null)
-        {
-            throw new Exception();
-        }
-
         IEnumerable<EnvironmentVariable> environmentVariables = new List<EnvironmentVariable>();
         if (key != null)
         {
