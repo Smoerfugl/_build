@@ -28,5 +28,5 @@ environmentVariables:
 	- name: SomeVariable
 	  value: SomeValue
 	  
-	- name: SecondVariable //will be fetched from environment_variable upon execution
+	- name: SecondVariable #will be fetched from environment_variable upon execution
 ```
