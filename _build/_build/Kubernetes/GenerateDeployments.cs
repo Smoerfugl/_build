@@ -1,5 +1,4 @@
 using Build.Environments;
-using Build.Kubernetes.Builders;
 using Build.Pipelines;
 using k8s.Models;
 
@@ -12,8 +11,21 @@ public interface IGenerateDeployments
 
 public class GenerateDeployments : IGenerateDeployments
 {
-    private V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
-        List<EnvironmentVariable> environmentVariables)
+    public IEnumerable<V1Deployment> Invoke(Pipeline pipeline, Env env)
+    {
+        var ns = pipeline.GetNamespace(env);
+
+        var key = pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
+            string.Equals(d, env.ToString(), StringComparison.CurrentCultureIgnoreCase));
+
+        var deployments = pipeline.Services.Select(d =>
+            GenerateDeployment(d, ns, pipeline.EnvironmentVariables[key])
+        );
+        return deployments;
+    }
+    
+    private static V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
+        IEnumerable<EnvironmentVariable> environmentVariables)
     {
         var deployment = new V1Deployment()
         {
@@ -71,7 +83,7 @@ public class GenerateDeployments : IGenerateDeployments
         return deployment;
     }
 
-    private List<V1EnvVar> GetEnvVars(IEnumerable<EnvironmentVariable> environmentVariables)
+    private static List<V1EnvVar> GetEnvVars(IEnumerable<EnvironmentVariable> environmentVariables)
     {
         var envVars = environmentVariables.Select(e => new V1EnvVar()
         {
@@ -81,7 +93,7 @@ public class GenerateDeployments : IGenerateDeployments
         return envVars;
     }
 
-    private Dictionary<string, ResourceQuantity> GetResourceLimits(Dictionary<ResourceUnits, string> limits)
+    private static Dictionary<string, ResourceQuantity> GetResourceLimits(Dictionary<ResourceUnits, string> limits)
     {
         var resourceQuantities =
             limits
@@ -89,18 +101,5 @@ public class GenerateDeployments : IGenerateDeployments
                     d => new ResourceQuantity(d.Value)
                 );
         return resourceQuantities;
-    }
-
-    public IEnumerable<V1Deployment> Invoke(Pipeline pipeline, Env env)
-    {
-        var ns = pipeline.GetNamespace(env);
-
-        var key = pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
-            string.Equals(d, env.ToString(), StringComparison.CurrentCultureIgnoreCase));
-
-        var deployments = pipeline.Services.Select(d =>
-            GenerateDeployment(d, ns, pipeline.EnvironmentVariables[key])
-        );
-        return deployments;
     }
 }

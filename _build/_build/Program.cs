@@ -76,6 +76,20 @@ void AddTargets(ParseResult cmdLine)
             File.WriteAllText("ingress.yml", yaml);
         });
 
+    Target("GenerateDeployment", "Generate Deployment.yaml file",
+        DependsOn("GenerateTye"),
+        () =>
+        {
+            var pipelineFile = File.ReadAllText("pipeline.yml");
+            var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
+
+            var deployment = new GenerateDeployments().Invoke(pipelineObject, environmentValue.ToEnum<Env>());
+
+            var yaml = K8sYaml.SerializeToMultipleObjects(deployment);
+
+            File.WriteAllText("deployment.yml", yaml);
+        });
+
     Target("Build", "Build docker image", () =>
     {
         var client = new DockerClientFactory().Invoke();
