@@ -91,6 +91,10 @@ void AddTargets(ParseResult cmdLine)
         objects.Add(services);
     });
 
+    Target("GenerateAll", "Generates all",
+        DependsOn("GenerateIngress", "GenerateDeployment"),
+        () => { });
+
     Target("Build", "Build docker image", () =>
     {
         var client = new DockerClientFactory().Invoke();
