@@ -106,7 +106,10 @@ cmd.SetHandler(async () =>
     var cmdLine = cmd.Parse(args);
     var targets = cmdLine.CommandResult.Tokens.Select(token => token.Value);
     var options = new Options(Options.Definitions.Select(d => (d.Aliases[0],
-        cmdLine.GetValueForOption(cmd.Options.OfType<Option<bool>>().Single(o => o.HasAlias(d.Aliases[0]))))));
+        cmdLine.GetValueForOption(
+            cmd.Options.OfType<Option<bool>>().Single(o => o.HasAlias(d.Aliases[0]))
+            )))
+    );
 
     AddTargets(cmdLine);
     await RunTargetsAndExitAsync(targets, options);
