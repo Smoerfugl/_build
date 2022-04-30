@@ -25,8 +25,7 @@ services:
     
 environmentVariables:
   production:
-	- name: SomeVariable
-	  value: SomeValue
-	  
-	- name: SecondVariable #will be fetched from environment_variable upon execution
+     - name: SomeVariable
+       value: SomeValue 
+     - name: SecondVariable #will be fetched from environment_variable upon execution
 ```
