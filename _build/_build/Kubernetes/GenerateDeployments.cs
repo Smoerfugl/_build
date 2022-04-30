@@ -36,6 +36,8 @@ public class GenerateDeployments : IGenerateDeployments
     {
         var deployment = new V1Deployment()
         {
+            Kind = "deployment",
+            ApiVersion = "apps/v1",
             Metadata = new V1ObjectMeta()
             {
                 Name = pipelineService.Name,
