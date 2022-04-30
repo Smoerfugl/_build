@@ -1,7 +1,7 @@
 # _build
 ## Environments supported
 
-Set on execution --env=${env}
+Set on execution --environment=${env}
 
 ```cs
 Development,
