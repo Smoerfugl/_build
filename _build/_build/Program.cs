@@ -64,7 +64,7 @@ void AddTargets(ParseResult cmdLine)
         }
     );
 
-    Target("GenerateIngress", "Generate Ingress.yaml file",
+    Target("GenerateIngress", "Generate deployments",
         DependsOn("GenerateTye"),
         () =>
         {
@@ -80,13 +80,15 @@ void AddTargets(ParseResult cmdLine)
             objects.Add(@namespace);
         });
 
-    Target("GenerateDeployment", "Generate Deployment.yaml file", () =>
+    Target("GenerateDeployment", "Generate deployments", () =>
     {
         var pipelineFile = File.ReadAllText("pipeline.yml");
         var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
 
-        var deployment = new GenerateDeployments().Invoke(pipelineObject, environmentValue.ToEnum<Env>());
-        objects.Add(deployment);
+        var deployments = new GenerateDeployments().Invoke(pipelineObject, environmentValue.ToEnum<Env>());
+        var services = new GenerateServices().Invoke(deployments, environmentValue.ToEnum<Env>());
+        objects.Add(deployments);
+        objects.Add(services);
     });
 
     Target("Build", "Build docker image", () =>
