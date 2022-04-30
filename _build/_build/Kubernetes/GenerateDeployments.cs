@@ -18,12 +18,24 @@ public class GenerateDeployments : IGenerateDeployments
         var key = pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
             string.Equals(d, env.ToString(), StringComparison.CurrentCultureIgnoreCase));
 
+        if (key != null)
+        {
+            throw new Exception();
+        }
+
+        IEnumerable<EnvironmentVariable> environmentVariables = new List<EnvironmentVariable>();
+        if (key != null)
+        {
+            environmentVariables = pipeline.EnvironmentVariables[key];
+        }
+
         var deployments = pipeline.Services.Select(d =>
-            GenerateDeployment(d, ns, pipeline.EnvironmentVariables[key])
+            GenerateDeployment(d, ns, environmentVariables)
         );
+
         return deployments;
     }
-    
+
     private static V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
         IEnumerable<EnvironmentVariable> environmentVariables)
     {
