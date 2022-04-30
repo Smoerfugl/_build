@@ -36,6 +36,8 @@ public class GenerateDeployments : IGenerateDeployments
     {
         var deployment = new V1Deployment()
         {
+            Kind = "deployment",
+            ApiVersion = "apps/v1",
             Metadata = new V1ObjectMeta()
             {
                 Name = pipelineService.Name,
@@ -104,7 +106,7 @@ public class GenerateDeployments : IGenerateDeployments
     {
         var resourceQuantities =
             limits
-                .ToDictionary(d => d.ToString().ToLower(),
+                .ToDictionary(d => d.Key.ToString().ToLower(),
                     d => new ResourceQuantity(d.Value)
                 );
         return resourceQuantities;
