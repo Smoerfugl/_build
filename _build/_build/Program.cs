@@ -117,7 +117,7 @@ cmd.SetHandler(async () =>
     var cmdLine = cmd.Parse(args);
 
     var targets = cmdLine.CommandResult.Tokens.Select(token => token.Value).ToList();
-    if (targets.Count == 0)
+    if (targets.Count > 0)
     {
         targets.Add("WriteToFile");
     }
