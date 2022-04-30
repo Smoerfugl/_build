@@ -56,7 +56,7 @@ public class GenerateDeployments : IGenerateDeployments
                     {
                         Containers = new List<V1Container>()
                         {
-                            new V1Container()
+                            new()
                             {
                                 Name = pipelineService.Name,
                                 ImagePullPolicy = "Always",
