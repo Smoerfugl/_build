@@ -12,6 +12,19 @@ public interface IGenerateDeployments
 
 public class GenerateDeployments : IGenerateDeployments
 {
+    public IEnumerable<V1Deployment> Invoke(Pipeline pipeline, Env env)
+    {
+        var ns = pipeline.GetNamespace(env);
+
+        var key = pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
+            string.Equals(d, env.ToString(), StringComparison.CurrentCultureIgnoreCase));
+
+        var deployments = pipeline.Services.Select(d =>
+            GenerateDeployment(d, ns, pipeline.EnvironmentVariables[key])
+        );
+        return deployments;
+    }
+    
     private V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
         List<EnvironmentVariable> environmentVariables)
     {
@@ -89,18 +102,5 @@ public class GenerateDeployments : IGenerateDeployments
                     d => new ResourceQuantity(d.Value)
                 );
         return resourceQuantities;
-    }
-
-    public IEnumerable<V1Deployment> Invoke(Pipeline pipeline, Env env)
-    {
-        var ns = pipeline.GetNamespace(env);
-
-        var key = pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
-            string.Equals(d, env.ToString(), StringComparison.CurrentCultureIgnoreCase));
-
-        var deployments = pipeline.Services.Select(d =>
-            GenerateDeployment(d, ns, pipeline.EnvironmentVariables[key])
-        );
-        return deployments;
     }
 }
