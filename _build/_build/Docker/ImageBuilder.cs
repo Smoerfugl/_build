@@ -7,6 +7,7 @@ namespace Build.Docker;
 
 public interface IImageBuilder
 {
+    Task<List<string?>> BuildImage(ImageBuilderParams imageBuilderParams);
 }
 
 public class ImageBuilderParams
@@ -46,7 +47,7 @@ public class ImageBuilder : IImageBuilder
         return await StartProcess(startInfo);
     }
 
-    public async Task<List<string?>> StartProcess(ProcessStartInfo startInfo)
+    private async Task<List<string?>> StartProcess(ProcessStartInfo startInfo)
     {
         List<string?> output = new List<string?>();
         var process = new Process()
