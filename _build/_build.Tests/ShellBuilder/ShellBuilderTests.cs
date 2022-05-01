@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using _build.Tests.Docker;
 using Build.ShellBuilder;
 using Xunit;
@@ -18,9 +19,9 @@ public class ShellBuilderTests
     }
     
     [Fact]
-    public void GivenEcho_ShouldOutputToConsole()
+    public async Task GivenEcho_ShouldOutputToConsole()
     {
-        new ShellProcessBuilder("echo")
+        await new ShellProcessBuilder("echo")
             .WithArgument("Hello World")
             .Run();
     }
