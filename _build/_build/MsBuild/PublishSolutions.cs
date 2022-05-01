@@ -21,7 +21,6 @@ public class PublishSolutions : IPublishSolution
             Directory.Delete($"{OutputFolder}{Path.DirectorySeparatorChar}{projectFolder}", true);
         }
 
-
         Console.WriteLine("Publishing project: " + projectFolder);
         new ShellProcessBuilder("dotnet").WithArgument("publish")
             .WithArgument("-c", "Release")

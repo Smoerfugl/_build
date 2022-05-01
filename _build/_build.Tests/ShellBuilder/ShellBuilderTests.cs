@@ -20,10 +20,6 @@ public class ShellBuilderTests
     [Fact]
     public void GivenEcho_ShouldOutputToConsole()
     {
-        if (!OperatingSystem.IsLinux())
-        {
-            return;
-        }
         new ShellProcessBuilder("echo")
             .WithArgument("Hello World")
             .Run();
