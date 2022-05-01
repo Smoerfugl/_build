@@ -100,24 +100,24 @@ void AddTargets(Targets targets, ParseResult cmdLine)
     });
 
 
-    var projects = pipelineObject.Services.Select(d => d.Project).ToList();
+    var projects = pipelineObject.Services.Select(d => new {d.Project, d.Dockerfile}).ToList();
     var publishSolutions = new PublishSolutions();
 
     foreach (var service in projects)
     {
-        targets.Add(service,
-            async () => await publishSolutions.Invoke(service));
+        targets.Add(service.Project,
+            async () => await publishSolutions.Invoke(service.Project));
     }
 
     targets.Add("Publish", "Publish solutions", DependsOn(pipelineObject.Services.Select(d => d.Project).ToArray()),
         () => { });
     targets.Add("BuildDockerImages", "Builds docker images", DependsOn("Publish"), async () =>
     {
-        foreach (var service in projects)
+        foreach (var project in projects)
         {
             var client = new DockerClientFactory().Invoke();
             await new BuildDockerImage(client)
-            .Invoke($"output/{service}");
+            .Invoke(pipelineObject.Registry, project.Project, project.Dockerfile);
         }
     });
 
