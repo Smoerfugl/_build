@@ -42,13 +42,13 @@ public class ImageBuilder : IImageBuilder
         processBuilder
             .WithArgument("build")
             .WithArgument(".")
-            .WithArgument($"-t {imageBuilderParams.ImageName.ToLower()}:{imageBuilderParams.ImageTag.ToLower()}")
-            .WithArgument($"-f \"{imageBuilderParams.DockerfilePath}\"");
+            .WithArgument($"-f \"{imageBuilderParams.DockerfilePath}\"")
+            .WithArgument($"-t {imageBuilderParams.ImageName.ToLower()}:{imageBuilderParams.ImageTag.ToLower()}");
 
         imageBuilderParams.BuildArgs.ForEach(d =>
             processBuilder.WithArgument($"--build-arg {d}")
         );
-
+        
         await processBuilder.Run();
         return true;
     }
