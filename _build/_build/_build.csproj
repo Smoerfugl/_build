@@ -11,6 +11,7 @@
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>_build</ToolCommandName>
         <PackageOutputPath>./output</PackageOutputPath>
+        <Authors>Smoerfugl</Authors>
     </PropertyGroup>
 
     <ItemGroup>
