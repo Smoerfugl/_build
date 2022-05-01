@@ -15,10 +15,10 @@ public class PublishSolutions : IPublishSolution
 
     public Task Invoke(string projectFolder)
     {
-        var exists = Directory.Exists(OutputFolder);
+        var exists = Directory.Exists($"{OutputFolder}{Path.DirectorySeparatorChar}{projectFolder}");
         if (exists)
         {
-            Directory.Delete(OutputFolder, true);
+            Directory.Delete($"{OutputFolder}{Path.DirectorySeparatorChar}{projectFolder}", true);
         }
 
 
