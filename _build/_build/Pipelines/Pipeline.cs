@@ -18,6 +18,7 @@ public class Pipeline
 public class PipelineService
 {
     public string Name { get; set; } = null!;
+    public string? Dockerfile = null;
     public int ServicePort { get; set; }
     public int? Replicas { get; set; } = 1;
     public string? Hostname { get; set; }
