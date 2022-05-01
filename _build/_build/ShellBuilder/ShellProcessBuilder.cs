@@ -28,6 +28,7 @@ public class ShellProcessBuilder
     public Task Run()
     {
         var process = Build();
+        Console.WriteLine($"Running command {process.StartInfo.FileName} {process.StartInfo.Arguments}");
         process.OutputDataReceived += (sender, args) => Console.WriteLine("- [✓] : {0}", args.Data);
         process.ErrorDataReceived += (sender, args) =>
         {
