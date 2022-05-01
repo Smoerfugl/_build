@@ -10,6 +10,7 @@ using Build.Environments;
 using Build.MsBuild;
 using Build.Yaml;
 using Bullseye;
+using Bullseye.Internal;
 using static Bullseye.Targets;
 
 
@@ -116,7 +117,7 @@ void AddTargets(Targets targets, ParseResult cmdLine)
         {
             var client = new DockerClientFactory().Invoke();
             await new BuildDockerImage(client)
-            .Invoke($"output/${service}");
+            .Invoke($"output/{service}");
         }
     });
 

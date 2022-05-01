@@ -25,6 +25,7 @@ public class PublishSolutions : IPublishSolution
         Console.WriteLine("Publishing project: " + projectFolder);
         new ShellProcessBuilder("dotnet").WithArgument("publish")
             .WithArgument("-c", "Release")
+            .WithArgument(projectFolder)
             .WithArgument("-o", $"output/{projectFolder}")
             .Run();
 
