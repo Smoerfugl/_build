@@ -28,7 +28,5 @@ public class Converter : TextWriter
 
     public override void Write(char value)
     {
-        throw new NotSupportedException(
-            "This text writer only supports WriteLine(string) and WriteLine(string, params object[]).");
     }
 }
