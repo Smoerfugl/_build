@@ -27,6 +27,5 @@ public class ShellBuilderTests
         new ShellProcessBuilder("echo")
             .WithArgument("Hello World")
             .Run();
-        
     }
 }
