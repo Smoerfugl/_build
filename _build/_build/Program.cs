@@ -7,8 +7,10 @@ using Build.Extensions;
 using Build.Kubernetes;
 using Build.Pipelines;
 using Build.Environments;
+using Build.MsBuild;
 using Build.Yaml;
 using Bullseye;
+using Bullseye.Internal;
 using static Bullseye.Targets;
 
 
@@ -41,21 +43,20 @@ foreach (var (aliases, description) in Options.Definitions)
     cmd.Add(new Option<bool>(aliases.ToArray(), description));
 }
 
-void AddTargets(ParseResult cmdLine)
+void AddTargets(Targets targets, ParseResult cmdLine)
 {
     var environmentValue = cmdLine.CommandResult.GetValueForOption(environmentOption)!;
     var domainValue = cmdLine.CommandResult.GetValueForOption(domainOption)!;
     var outputPathValue = cmdLine.CommandResult.GetValueForOption(outputPath)!;
     var objects = new List<object>();
-    Target("default",
-        () => Console.WriteLine(environmentValue));
+    var pipelineFile = File.ReadAllText("pipeline.yml");
+    var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
+    targets.Add("default", () => Console.WriteLine(environmentValue));
 
-    Target("GenerateTye",
+    targets.Add("GenerateTye",
         "Generate Tye.yaml file",
         () =>
         {
-            var pipelineFile = File.ReadAllText("pipeline.yml");
-            var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
             var tyeFile = new GenerateTyeYaml(environmentValue.ToEnum<Env>(), pipelineObject)
                 .Invoke();
 
@@ -64,13 +65,10 @@ void AddTargets(ParseResult cmdLine)
         }
     );
 
-    Target("GenerateIngress", "Generate deployments",
+    targets.Add("GenerateIngress", "Generate deployments",
         DependsOn("GenerateTye"),
         () =>
         {
-            var pipelineFile = File.ReadAllText("pipeline.yml");
-            var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
-
             var ingressRoutes = new GenerateIngressRoutesRoutesList().Invoke(pipelineObject, domainValue);
             var certificates = new GenerateCertificates().Invoke(ingressRoutes);
             var @namespace = new GenerateNamespace(pipelineObject.Name).Invoke();
@@ -80,22 +78,19 @@ void AddTargets(ParseResult cmdLine)
             objects.Add(@namespace);
         });
 
-    Target("GenerateDeployment", "Generate deployments", () =>
+    targets.Add("GenerateDeployment", "Generate deployments", () =>
     {
-        var pipelineFile = File.ReadAllText("pipeline.yml");
-        var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
-
         var deployments = new GenerateDeployments().Invoke(pipelineObject, environmentValue.ToEnum<Env>());
         var services = new GenerateServices().Invoke(deployments, environmentValue.ToEnum<Env>());
         objects.Add(deployments);
         objects.Add(services);
     });
 
-    Target("GenerateAll", "Generates all",
+    targets.Add("GenerateAll", "Generates all",
         DependsOn("GenerateIngress", "GenerateDeployment"),
         () => { });
 
-    Target("Build", "Build docker image", () =>
+    targets.Add("Build", "Build docker image", () =>
     {
         var client = new DockerClientFactory().Invoke();
         // await client.Images.PushImageAsync("", new ImagePushParameters()
@@ -104,7 +99,20 @@ void AddTargets(ParseResult cmdLine)
         // }, new AuthConfig(), new Progress<JSONMessage>())
     });
 
-    Target("WriteToFile", "Write objects to file", () =>
+
+    var services = pipelineObject.Services.Select(d => d.Project).ToList();
+    var publishSolutions = new PublishSolutions();
+
+    foreach (var service in services)
+    {
+        targets.Add(service,
+            async () => await publishSolutions.Invoke(service));
+    }
+
+    targets.Add("Publish", "Publish solutions", DependsOn(pipelineObject.Services.Select(d => d.Project).ToArray()),
+        () => { });
+
+    targets.Add("WriteToFile", "Write objects to file", () =>
     {
         var yaml = K8sYaml.SerializeToMultipleObjects(objects);
         File.WriteAllText(outputPathValue, yaml);
@@ -116,10 +124,10 @@ cmd.SetHandler(async () =>
     // translate from System.CommandLine to Bullseye
     var cmdLine = cmd.Parse(args);
 
-    var targets = cmdLine.CommandResult.Tokens.Select(token => token.Value).ToList();
-    if (targets.Count > 0)
+    var targetsToRun = cmdLine.CommandResult.Tokens.Select(token => token.Value).ToList();
+    if (targetsToRun.Count > 0)
     {
-        targets.Add("WriteToFile");
+        targetsToRun.Add("WriteToFile");
     }
 
     var options = new Options(Options.Definitions.Select(d => (d.Aliases[0],
@@ -127,8 +135,10 @@ cmd.SetHandler(async () =>
             cmd.Options.OfType<Option<bool>>().Single(o => o.HasAlias(d.Aliases[0]))
         )))
     );
+    var targets = new Targets();
+    AddTargets(targets, cmdLine);
+    options.Parallel = true;
 
-    AddTargets(cmdLine);
-    await RunTargetsAndExitAsync(targets, options);
+    await targets.RunAndExitAsync(targetsToRun, options);
 });
 return await cmd.InvokeAsync(args);
