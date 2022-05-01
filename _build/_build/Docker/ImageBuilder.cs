@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Build.ShellBuilder;
 using Docker.DotNet;
 using Microsoft.Extensions.Logging;
 
@@ -7,7 +8,7 @@ namespace Build.Docker;
 
 public interface IImageBuilder
 {
-    Task<List<string?>> BuildImage(ImageBuilderParams imageBuilderParams);
+    Task<bool> BuildImage(ImageBuilderParams imageBuilderParams);
 }
 
 public class ImageBuilderParams
@@ -34,50 +35,21 @@ public class ImageBuilder : IImageBuilder
         _dockerClient = dockerClient;
     }
 
-    public async Task<List<string?>> BuildImage(ImageBuilderParams imageBuilderParams)
+    public async Task<bool> BuildImage(ImageBuilderParams imageBuilderParams)
     {
-        var startInfo = new ProcessStartInfo("docker")
-        {
-            UseShellExecute = false,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        AddArguments(imageBuilderParams, startInfo);
-        return await StartProcess(startInfo);
-    }
+        var processBuilder = new ShellProcessBuilder("docker");
 
-    private async Task<List<string?>> StartProcess(ProcessStartInfo startInfo)
-    {
-        List<string?> output = new List<string?>();
-        var process = new Process()
-        {
-            StartInfo = startInfo,
-            EnableRaisingEvents = true,
-        };
+        processBuilder
+            .WithArgument("build")
+            .WithArgument(".")
+            .WithArgument($"-t {imageBuilderParams.ImageName.ToLower()}:{imageBuilderParams.ImageTag.ToLower()}")
+            .WithArgument($"-f \"{imageBuilderParams.DockerfilePath}\"");
 
-        process.OutputDataReceived += (sender, args) => { output.Add(args.Data); };
-        process.ErrorDataReceived += (sender, args) => { output.Add(args.Data); };
-        process.Start();
-        await process.WaitForExitAsync();
-        if (process.ExitCode != 0)
-        {
-            throw new Exception("Docker build failed with ExitCode " + process.ExitCode);
-        }
-
-        return output;
-    }
-
-    private void AddArguments(ImageBuilderParams imageBuilderParams, ProcessStartInfo startInfo)
-    {
-        var arguments = new List<string>();
-        arguments.Add("build");
-        arguments.Add(".");
-        arguments.Add($"-t {imageBuilderParams.ImageName}:{imageBuilderParams.ImageTag}");
-        arguments.Add($"-f \"{imageBuilderParams.DockerfilePath}\"");
         imageBuilderParams.BuildArgs.ForEach(d =>
-            arguments.Add($"--build-arg {d}")
+            processBuilder.WithArgument($"--build-arg {d}")
         );
-        startInfo.Arguments = string.Join(" ", arguments);
+
+        await processBuilder.Run();
+        return true;
     }
 }

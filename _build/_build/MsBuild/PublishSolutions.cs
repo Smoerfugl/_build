@@ -23,13 +23,11 @@ public class PublishSolutions : IPublishSolution
 
 
         Console.WriteLine("Publishing project: " + projectFolder);
-        var process = new ShellProcessBuilder("dotnet").WithArgument("publish")
+        new ShellProcessBuilder("dotnet").WithArgument("publish")
             .WithArgument("-c", "Release")
             .WithArgument("-o", $"output/{projectFolder}")
-            .Build();
+            .Run();
 
-        process.Start();
-        process.WaitForExit();
         return Task.CompletedTask;
     }
 }

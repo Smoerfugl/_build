@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Build.MsBuild;
+using Docker.DotNet.Models;
 
 namespace Build.ShellBuilder;
 
@@ -16,7 +16,6 @@ public class ShellProcessBuilder
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            CreateNoWindow = false,
         };
     }
 
@@ -26,13 +25,33 @@ public class ShellProcessBuilder
         return this;
     }
 
+    public Task Run()
+    {
+        var process = Build();
+        process.OutputDataReceived += (sender, args) => Console.WriteLine("- [✓] : {0}", args.Data);
+        process.ErrorDataReceived += (sender, args) =>
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("- [x]: {0}", args.Data);
+            Console.ResetColor();
+        };
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        process.WaitForExit();
+        return Task.CompletedTask;
+    }
+
     public Process Build()
     {
         _startInfo.Arguments = string.Join(" ", _arguments.Select(a => a.ToString()));
-        return new()
+        
+        var process = new Process()
         {
             StartInfo = _startInfo,
         };
+
+        return process;
     }
 }
 public class ShellArgument

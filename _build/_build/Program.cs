@@ -89,7 +89,7 @@ void AddTargets(Targets targets, ParseResult cmdLine)
         DependsOn("GenerateIngress", "GenerateDeployment"),
         () => { });
 
-    targets.Add("Build", "Build docker image", () =>
+    targets.Add("PushDockerImage", "docker image", () =>
     {
         var client = new DockerClientFactory().Invoke();
         // await client.Images.PushImageAsync("", new ImagePushParameters()
@@ -99,10 +99,10 @@ void AddTargets(Targets targets, ParseResult cmdLine)
     });
 
 
-    var services = pipelineObject.Services.Select(d => d.Project).ToList();
+    var projects = pipelineObject.Services.Select(d => d.Project).ToList();
     var publishSolutions = new PublishSolutions();
 
-    foreach (var service in services)
+    foreach (var service in projects)
     {
         targets.Add(service,
             async () => await publishSolutions.Invoke(service));
@@ -110,6 +110,16 @@ void AddTargets(Targets targets, ParseResult cmdLine)
 
     targets.Add("Publish", "Publish solutions", DependsOn(pipelineObject.Services.Select(d => d.Project).ToArray()),
         () => { });
+    targets.Add("BuildDockerImages", "Builds docker images", DependsOn("Publish"), async () =>
+    {
+        foreach (var service in projects)
+        {
+            var client = new DockerClientFactory().Invoke();
+            await new BuildDockerImage(client)
+            .Invoke($"output/${service}");
+        }
+    });
+
 
     targets.Add("WriteToFile", "Write objects to file", () =>
     {
