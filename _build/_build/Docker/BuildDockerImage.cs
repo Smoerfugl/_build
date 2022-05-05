@@ -4,7 +4,7 @@ namespace Build.Docker;
 
 public interface IBuildDockerImage
 {
-    Task Invoke(string registry, string project, string dockerfile);
+    Task Invoke(string registry, string project, string dockerfile, string tag);
 }
 
 public class BuildDockerImage : IBuildDockerImage
@@ -16,7 +16,7 @@ public class BuildDockerImage : IBuildDockerImage
         _client = client;
     }
 
-    public async Task Invoke(string registry, string project, string? dockerfile)
+    public async Task Invoke(string registry, string project, string? dockerfile, string tag)
     {
         if (dockerfile == null)
         {
@@ -25,7 +25,7 @@ public class BuildDockerImage : IBuildDockerImage
         }
 
         var imageBuilder = new ImageBuilder(_client);
-        await imageBuilder.BuildImage(new ImageBuilderParams($"{registry.TrimEnd('/')}/{project}", "latest", dockerfile)
+        await imageBuilder.BuildImage(new ImageBuilderParams($"{registry.TrimEnd('/')}/{project}", tag, dockerfile)
         {
             BuildArgs = new List<string>()
             {
