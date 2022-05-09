@@ -13,7 +13,7 @@ public class PublishSolutionsTests
     [Fact]
     public void ShouldPublishSolutions()
     {
-        var sut = new PublishSolutions();
+        var sut = new PublishSolution();
         sut.Invoking(d => d.Invoke("_build"))
             .Should().NotThrowAsync();
     }

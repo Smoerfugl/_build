@@ -4,6 +4,7 @@ using Build.Environments;
 using Build.Kubernetes;
 using Build.Pipelines;
 using FluentAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace _build.Tests.Kubernetes;
@@ -51,7 +52,12 @@ public class GenerateDeploymentTests
                 }
             }
         };
-        var deployments = new GenerateDeployments().Invoke(pipeline, Env.Staging).ToList();
+        var getPipelineMock = Substitute.For<IGetPipeline>();
+        getPipelineMock.Invoke().ReturnsForAnyArgs(pipeline);
+        var ienv = Substitute.For<IEnv>();
+        ienv.Value.ReturnsForAnyArgs(Environment.Development);
+
+        var deployments = new GenerateDeployments(getPipelineMock, ienv).Invoke().ToList();
 
         deployments.Should().NotBeNullOrEmpty();
         deployments.Count.Should().Be(1);

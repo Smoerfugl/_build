@@ -1,104 +1,97 @@
 using System.CommandLine;
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+using AutoMapper.Internal;
+using Build.Commands;
+using Build.Pipelines;
+using Spectre.Console;
 
 namespace Build.Kubernetes;
 
 public class Commands : ICommands
 {
     private readonly IGenerateIngressRoutesList _generateIngressRoutesList;
+    private readonly IGenerateCertificates _generateCertificates;
+    private readonly IGenerateNamespace _generateNamespace;
+    private readonly IGetPipeline _getPipeline;
+    private readonly IDomain _domain;
+    private readonly IGenerateDeployments _generateDeployments;
+    private readonly IGenerateServices _generateServices;
+    private readonly IKubernetesConfigRepository _kubernetesConfigRepository;
 
-    public Commands(IGenerateIngressRoutesList generateIngressRoutesList)
+    public Commands(IGenerateIngressRoutesList generateIngressRoutesList,
+        IGenerateCertificates generateCertificates,
+        IGenerateNamespace generateNamespace,
+        IGetPipeline getPipeline,
+        IDomain domain,
+        IGenerateDeployments generateDeployments,
+        IGenerateServices generateServices,
+        IKubernetesConfigRepository kubernetesConfigRepository
+    )
     {
         _generateIngressRoutesList = generateIngressRoutesList;
+        _generateCertificates = generateCertificates;
+        _generateNamespace = generateNamespace;
+        _getPipeline = getPipeline;
+        _domain = domain;
+        _generateDeployments = generateDeployments;
+        _generateServices = generateServices;
+        _kubernetesConfigRepository = kubernetesConfigRepository;
+    }
+
+    // public static Option<bool> GenerateIngressRoutes =
+    //     new(new[] { "ingress", "-i" }, () => false, "Generate ingress routes");
+
+    private Task<T> TaskRunner<T>(ProgressContext p, Func<T> a, string name)
+    {
+        var t1 = p.AddTask(name);
+        var d = a();
+        t1.Value = 100;
+
+        return Task.FromResult(d);
     }
 
     public void Register(CommandsBuilder builder)
     {
-        var generateIngress = new Option<bool>(new[] { "ingress", "-i" }, () => true, "Generate ingress routes");
         var command = new Command("kubernetes", "Kubernetes related")
         {
-            generateIngress
         };
-        command.SetHandler(() =>
-        {
-            var shouldGenerateIngressRoute = command.Options.SingleOrDefault(d => d.Name == generateIngress.Name);
-            if (shouldGenerateIngressRoute != null)
-            {
-                Console.WriteLine("Generating Ingress");
-                _generateIngressRoutesList.Invoke();
-            }
 
+        var ingressCommand = new Command("ingress");
+
+        ingressCommand.SetHandler(async () =>
+        {
+            var pipeline = _getPipeline.Invoke() ?? throw new Exception("Missing Pipeline.yml");
+            var domain = _domain.Value ?? throw new Exception("Cannot generate ingress without domain");
+
+            await AnsiConsole.Progress()
+                .StartAsync(async ctx =>
+                {
+                    var ingressRoutes = await TaskRunner(ctx, () => _generateIngressRoutesList.Invoke(pipeline, domain),
+                        "Generating ingress routes");
+                    var certificates = await TaskRunner(ctx, () => _generateCertificates.Invoke(ingressRoutes),
+                        "Generating Certificates");
+                    var @namespace = await TaskRunner(ctx, () => _generateNamespace.Invoke(), "Generating namespace");
+                    var deployments =
+                        await TaskRunner(ctx, () => _generateDeployments.Invoke(), "Generate deployments");
+                    var services = await TaskRunner(ctx, () => _generateServices.Invoke(deployments),
+                        "Generating services");
+
+
+                    _kubernetesConfigRepository.AddToManifesto(
+                        ingressRoutes,
+                        certificates,
+                        @namespace,
+                        deployments,
+                        services
+                        );
+                    
+                    await TaskRunner(ctx, async () => await _kubernetesConfigRepository.WriteToFile(),
+                        "Saving to file");
+                });
         });
 
 
+        command.AddCommand(ingressCommand);
+
         builder.Add(command);
-
-        // command.SetHandler(() =>
-        // {
-        //     Console.WriteLine("Kubernetes");
-        // });
-    }
-}
-
-public interface ICommands
-{
-    void Register(CommandsBuilder builder);
-}
-
-public interface ICommandsBuilder
-{
-    void Add(Command command);
-    public IList<Command> Commands { get; }
-}
-
-public class CommandsBuilder : ICommandsBuilder
-{
-    private readonly IList<Command> _commands = new List<Command>();
-
-    public void Add(Command command)
-    {
-        AddCommand(command);
-    }
-
-    public IList<Command> Commands
-    {
-        get => _commands;
-    }
-
-    private void AddCommand(Command command)
-    {
-        _commands.Add(command);
-    }
-}
-
-public static class CommandsExtensions
-{
-    public static void RegisterCommands<T>(this RootCommand rootCommand, IServiceProvider serviceCollection)
-    {
-        RegisterCommands(rootCommand, typeof(T).Assembly, serviceCollection);
-    }
-
-    public static void RegisterCommands(this RootCommand rootCommand, Assembly assembly,
-        IServiceProvider serviceProvider)
-    {
-        var builder = new CommandsBuilder();
-
-        var commands = assembly
-            .GetTypes()
-            .Where(d => d.IsClass)
-            .Where(d => d.IsAssignableTo(typeof(ICommands)))
-            .ToList();
-
-        foreach (var command in commands)
-        {
-            var instance = (ICommands)ActivatorUtilities.CreateInstance(serviceProvider, command);
-            instance.Register(builder);
-        }
-
-        foreach (var builderCommand in builder.Commands)
-        {
-            rootCommand?.AddCommand(builderCommand);
-        }
     }
 }

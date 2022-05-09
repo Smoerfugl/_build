@@ -1,12 +1,15 @@
 // See https://aka.ms/new-console-template for more information
 
 using System.CommandLine;
-using Build.Kubernetes;
+using Build.Commands;
+using Build.Environments;
+using Build.Pipelines;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using Environment = Build.Environments.Environment;
 
 
 namespace Build;
@@ -43,16 +46,26 @@ internal class Program
                         .Build()
                 );
 
-                // services.AddScoped<ICommandHandler, CommandHandler>();
-
-                services.AddSingleton<ICommandArgs>(sp => new CommandCommandArgs { Args = args });
+                services.AddSingleton<ICommandArgs>(sp => new CommandCommandArgs(args));
 
 
                 var rc = new RootCommand();
-                rc.AddGlobalOption(
+                var domainOption =
                     new Option<string>(new[] { "--domain" }, () => "localhost",
-                        "The domain to use for the build")
-                );
+                        "The domain to use for the build");
+                rc.AddGlobalOption(domainOption);
+                var environmentOption = new Option<string>(new[] { "--environment", "-e" },
+                    () => Environment.Development.ToString(),
+                    "The environment to use for the build");
+                rc.AddGlobalOption(environmentOption);
+
+                var parseResult = rc.Parse(args);
+                var domainValue = parseResult.CommandResult.GetValueForOption(domainOption)!;
+                services.AddSingleton<IDomain>(new Domain(domainValue));
+
+                var environmentValue = parseResult.CommandResult.GetValueForOption(environmentOption)!;
+                services.AddSingleton<IEnv>(sp => new Env(Enum.Parse<Environment>(environmentValue, true)));
+
                 services.AddSingleton(sp =>
                 {
                     rc.RegisterCommands<Program>(sp);
@@ -66,6 +79,11 @@ internal class Program
 
 public class CommandCommandArgs : ICommandArgs
 {
+    public CommandCommandArgs(string[] args)
+    {
+        Args = args;
+    }
+
     public string[] Args { get; set; }
 }
 

@@ -48,10 +48,8 @@ public class App : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        // await D();
-        var d = _rootCommand.Parse(_commandArgs.Args);
         await _rootCommand.InvokeAsync(_commandArgs.Args);
-        this._applicationLifetime.StopApplication();
+        _applicationLifetime.StopApplication();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

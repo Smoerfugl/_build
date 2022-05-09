@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using AutoMapper.Configuration.Annotations;
 using Build.Kubernetes;
 using Build.Pipelines;
 using Build.Environments;
 using FluentAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace _build.Tests.Kubernetes;
@@ -28,7 +30,17 @@ public class GenerateManifestoTests
                 }
             }
         };
-        var manifesto = new GenerateManifesto().Invoke(pipeline, Env.Development, "test");
+
+        var pipelineMock = Substitute.For<IGetPipeline>();
+        pipelineMock.Invoke().ReturnsForAnyArgs(pipeline);
+        var env = Substitute.For<IEnv>();
+            env.Value.ReturnsForAnyArgs(Environment.Development);
+
+        var generateNamespace = new GenerateNamespace(pipelineMock, env);
+        var generateCertificates = new GenerateCertificates();
+        var generateIngressRoutes = new GenerateIngressRoutesList(env);
+        var domain = new Domain("some-project.com");
+        var manifesto = new GenerateManifesto(generateNamespace, generateCertificates, generateIngressRoutes, domain).Invoke(pipeline);
 
         manifesto.Should().NotBeNullOrEmpty();
     }
