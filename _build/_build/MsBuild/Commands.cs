@@ -18,7 +18,7 @@ public class Commands : ICommands
 
     public void Register(CommandsBuilder builder)
     {
-        var command = new Command("Build");
+        var command = new Command("build");
 
         var pipeline = _getPipeline.Invoke();
         var projects = pipeline?.Services.Select(d => d.Project).ToList();
@@ -33,30 +33,31 @@ public class Commands : ICommands
                     {
                         var task = ctx.AddTask($"Building {d}");
 
-                        while (!ctx.IsFinished)
+                        // while (!ctx.IsFinished)
+                        // {
+                        var t = _publishSolutions.Invoke(d);
+                        var done = false;
+#pragma warning disable CS4014
+                        Task.Run(() => t)
+                            .ContinueWith(_ =>
+#pragma warning restore CS4014
+                            {
+                                done = true;
+                                task.Value = 100;
+                            });
+                        task.Increment(1);
+                        while (!done)
                         {
-                            await _publishSolutions.Invoke(d);
-                            ctx.Refresh();
                             task.Increment(1);
+                            Console.WriteLine("incremeted");
+                            await Task.Delay(400);
                         }
                     }
 
                     projects.AsParallel().ForAll
-                    (Action);
+                        (Action);
                     return Task.CompletedTask;
                 });
-
-
-            // projects?.AsParallel().ForAll(d =>
-            //     {
-            //         AnsiConsole
-            //             .Status()
-            //             .Start($"Building {d}", ctx =>
-            //             {
-            //                 _publishSolutions.Invoke(d);
-            //             });
-            //     }
-            // );
         });
 
         builder.Add(command);
