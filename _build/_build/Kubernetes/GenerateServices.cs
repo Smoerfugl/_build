@@ -6,12 +6,12 @@ namespace Build.Kubernetes;
 
 public interface IGenerateServices
 {
-    List<V1Service> Invoke(IEnumerable<V1Deployment> deployments, Env env);
+    List<V1Service> Invoke(IEnumerable<V1Deployment> deployments);
 }
 
 public class GenerateServices : IGenerateServices
 {
-    public List<V1Service> Invoke(IEnumerable<V1Deployment> deployments, Env env)
+    public List<V1Service> Invoke(IEnumerable<V1Deployment> deployments)
     {
         
         var services = deployments.Select(GenerateService);

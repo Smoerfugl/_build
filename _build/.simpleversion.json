@@ -1,0 +1,22 @@
+{
+  "$schema": "http://simpleversion.kieranties.com/schema/unstable.json",
+  "version": "0.4.0",
+  "branches": {
+      "release": [".+"],
+      "overrides": [
+            {
+                    "match": "^refs/heads/master$",
+                    "label": ["beta", "1"]
+                  },
+            {
+                    "match": "^refs/heads/release/.+$"
+                  },
+            {
+                    "match": ".+",
+                    "label": ["{shortbranchname}"],
+                    "metadata": ["{shortsha}"]
+                  }
+          ]
+    }
+}
+

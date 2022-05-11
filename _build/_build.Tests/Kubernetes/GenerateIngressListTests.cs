@@ -3,6 +3,7 @@ using Build.Kubernetes;
 using Build.Pipelines;
 using Build.Environments;
 using FluentAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace _build.Tests.Kubernetes;
@@ -29,8 +30,10 @@ public class GenerateIngressListTests
             },
             EnvironmentVariables = new Dictionary<string, List<EnvironmentVariable>>()
         };
-        
-        var sut = new GenerateIngressRoutesRoutesList().Invoke(pipeline, "foo.com");
+
+        var ienv = Substitute.For<IEnv>();
+        ienv.Value.ReturnsForAnyArgs(Environment.Development);
+        var sut = new GenerateIngressRoutesList(ienv).Invoke(pipeline, "foo.com");
         
         sut.Count.Should().Be(2);
     }

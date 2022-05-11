@@ -29,13 +29,13 @@ public class ShellProcessBuilder
     {
         var process = Build();
         Console.WriteLine($"Running command {process.StartInfo.FileName} {process.StartInfo.Arguments}");
-        process.OutputDataReceived += (sender, args) => Console.WriteLine("- [✓] : {0}", args.Data);
-        process.ErrorDataReceived += (sender, args) =>
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("- [x]: {0}", args.Data);
-            Console.ResetColor();
-        };
+        // process.OutputDataReceived += (sender, args) => Console.WriteLine("- [✓] : {0}", args.Data);
+        // process.ErrorDataReceived += (sender, args) =>
+        // {
+        //     Console.ForegroundColor = ConsoleColor.Red;
+        //     Console.WriteLine("- [x]: {0}", args.Data);
+        //     Console.ResetColor();
+        // };
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();

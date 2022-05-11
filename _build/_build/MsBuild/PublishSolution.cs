@@ -1,6 +1,4 @@
-using Build.Pipelines;
 using Build.ShellBuilder;
-using Bullseye;
 
 namespace Build.MsBuild;
 
@@ -9,7 +7,7 @@ public interface IPublishSolution
     Task Invoke(string projectFolder);
 }
 
-public class PublishSolutions : IPublishSolution
+public class PublishSolution : IPublishSolution
 {
     private const string OutputFolder = "output";
 
@@ -22,7 +20,8 @@ public class PublishSolutions : IPublishSolution
         }
 
         Console.WriteLine("Publishing project: " + projectFolder);
-        new ShellProcessBuilder("dotnet").WithArgument("publish")
+        new ShellProcessBuilder("dotnet")
+            .WithArgument("publish")
             .WithArgument("-c", "Release")
             .WithArgument(projectFolder)
             .WithArgument("-o", $"output/{projectFolder}")

@@ -1,5 +1,6 @@
 using Build.Kubernetes.Builders;
 using Build.Environments;
+using Build.Pipelines;
 using k8s.Models;
 
 namespace Build.Kubernetes;
@@ -13,14 +14,15 @@ public class GenerateNamespace : IGenerateNamespace
 {
     private readonly string _ns;
 
-    public GenerateNamespace(string ns)
-    {
-        _ns = ns.ToLower();
-    }
+    // public GenerateNamespace(string ns)
+    // {
+    //     _ns = ns.ToLower();
+    // }
 
-    public GenerateNamespace(Pipelines.Pipeline pipeline, Env env)
+    public GenerateNamespace(IGetPipeline getPipeline, IEnv env)
     {
-        _ns = $"{env.ToString().ToLower()}-{pipeline.Name}";
+        var pipeline = getPipeline.Invoke();
+        _ns = $"{env.Value.ToString()?.ToLower()}-{pipeline?.Name}";
     }
 
     public V1Namespace Invoke()

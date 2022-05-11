@@ -1,4 +1,5 @@
 using Build.Environments;
+using Environment = Build.Environments.Environment;
 
 namespace Build.Pipelines;
 
@@ -9,7 +10,7 @@ public class Pipeline
     public Dictionary<string, List<EnvironmentVariable>> EnvironmentVariables { get; set; } = new();
     public string Name { get; set; } = null!;
 
-    public string GetNamespace(Env env)
+    public string GetNamespace(Environment env)
     {
         return $"{env.ToString().ToLower()}-{Name}";
     }

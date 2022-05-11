@@ -1,38 +1,53 @@
 using Build.Environments;
 using Build.Pipelines;
 using k8s.Models;
+using Environment = Build.Environments.Environment;
 
 namespace Build.Kubernetes;
 
 public interface IGenerateDeployments
 {
-    IEnumerable<V1Deployment> Invoke(Pipeline pipelines, Env env);
+    IEnumerable<V1Deployment> Invoke(string tagValue);
 }
 
 public class GenerateDeployments : IGenerateDeployments
 {
-    public IEnumerable<V1Deployment> Invoke(Pipeline pipeline, Env env)
-    {
-        var ns = pipeline.GetNamespace(env);
+    private readonly IEnv _env;
+    private readonly Environment _environment;
+    private readonly Pipeline? _pipeline;
 
-        var key = pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
-            string.Equals(d, env.ToString(), StringComparison.CurrentCultureIgnoreCase));
+    public GenerateDeployments(IGetPipeline getPipeline, IEnv env)
+    {
+        _pipeline = getPipeline.Invoke();
+        _env = env;
+        _environment = env.Value;
+    }
+    public IEnumerable<V1Deployment> Invoke(string tagValue)
+    {
+        if (_pipeline == null)
+        {
+            throw new Exception("Pipeline not found");
+        }
+        var ns = _pipeline.GetNamespace(_environment);
+
+        var key = _pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
+            string.Equals(d, _environment.ToString(), StringComparison.CurrentCultureIgnoreCase));
 
         IEnumerable<EnvironmentVariable> environmentVariables = new List<EnvironmentVariable>();
         if (key != null)
         {
-            environmentVariables = pipeline.EnvironmentVariables[key];
+            environmentVariables = _pipeline.EnvironmentVariables[key];
         }
 
-        var deployments = pipeline.Services.Select(d =>
-            GenerateDeployment(d, ns, environmentVariables)
+        var deployments = _pipeline.Services.Select(d =>
+            GenerateDeployment(d, ns, environmentVariables, tagValue)
         );
 
         return deployments;
     }
 
     private static V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
-        IEnumerable<EnvironmentVariable> environmentVariables)
+        IEnumerable<EnvironmentVariable> environmentVariables, string tagValue)
     {
         var deployment = new V1Deployment()
         {
@@ -69,7 +84,7 @@ public class GenerateDeployments : IGenerateDeployments
                             {
                                 Name = pipelineService.Name,
                                 ImagePullPolicy = "Always",
-                                Image = null, //todo: image
+                                Image = !string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest", //todo: image
                                 Env = GetEnvVars(environmentVariables),
                                 Resources = new V1ResourceRequirements()
                                 {

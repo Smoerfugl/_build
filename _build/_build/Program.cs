@@ -1,154 +1,96 @@
 // See https://aka.ms/new-console-template for more information
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
+using Build.Commands;
 using Build.Docker;
-using Build.Extensions;
-using Build.Kubernetes;
-using Build.Pipelines;
 using Build.Environments;
-using Build.MsBuild;
-using Build.Yaml;
-using Bullseye;
-using Bullseye.Internal;
-using static Bullseye.Targets;
+using Build.Pipelines;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+using Environment = Build.Environments.Environment;
 
 
-var cmd = new RootCommand { };
-var serializer = new YamlSerializer();
+namespace Build;
 
-var environmentOption = new Option<string>(new[] { "--environment", "-e" }, () => Env.Development.ToString(),
-    "The environment to use for the build");
-var domainOption = new Option<string>(new[] { "--domain" }, () => "localhost",
-    "The domain to use for the build");
-var outputPath = new Option<string>(new[] { "--output", "-o" }, () => "./kube.yml");
-AddOptions(cmd);
-
-
-void AddOptions(Command rootCommand)
+internal class Program
 {
-    rootCommand.Add(environmentOption);
-    rootCommand.Add(domainOption);
-    rootCommand.Add(outputPath);
-}
-
-cmd.Add(new Argument("targets")
-{
-    Arity = ArgumentArity.ZeroOrMore,
-    Description =
-        "A list of targets to run or list. If not specified, the \"default\" target will be run, or all targets will be listed.",
-});
-foreach (var (aliases, description) in Options.Definitions)
-{
-    cmd.Add(new Option<bool>(aliases.ToArray(), description));
-}
-
-void AddTargets(Targets targets, ParseResult cmdLine)
-{
-    var environmentValue = cmdLine.CommandResult.GetValueForOption(environmentOption)!;
-    var domainValue = cmdLine.CommandResult.GetValueForOption(domainOption)!;
-    var outputPathValue = cmdLine.CommandResult.GetValueForOption(outputPath)!;
-    var objects = new List<object>();
-    var pipelineFile = File.ReadAllText("pipeline.yml");
-    var pipelineObject = serializer.Deserialize<Pipeline>(pipelineFile);
-    targets.Add("default", () => Console.WriteLine(environmentValue));
-
-    targets.Add("GenerateTye",
-        "Generate Tye.yaml file",
-        () =>
-        {
-            var tyeFile = new GenerateTyeYaml(environmentValue.ToEnum<Env>(), pipelineObject)
-                .Invoke();
-
-            var yaml = serializer.Serialize(tyeFile);
-            File.WriteAllText("tye.yaml", yaml);
-        }
-    );
-
-    targets.Add("GenerateIngress", "Generate deployments",
-        DependsOn("GenerateTye"),
-        () =>
-        {
-            var ingressRoutes = new GenerateIngressRoutesRoutesList().Invoke(pipelineObject, domainValue);
-            var certificates = new GenerateCertificates().Invoke(ingressRoutes);
-            var @namespace = new GenerateNamespace(pipelineObject.Name).Invoke();
-
-            objects.AddRange(ingressRoutes);
-            objects.AddRange(certificates);
-            objects.Add(@namespace);
-        });
-
-    targets.Add("GenerateDeployment", "Generate deployments", () =>
+    public static async Task Main(string[] args)
     {
-        var deployments = new GenerateDeployments().Invoke(pipelineObject, environmentValue.ToEnum<Env>());
-        var services = new GenerateServices().Invoke(deployments, environmentValue.ToEnum<Env>());
-        objects.Add(deployments);
-        objects.Add(services);
-    });
-
-    targets.Add("GenerateAll", "Generates all",
-        DependsOn("GenerateIngress", "GenerateDeployment"),
-        () => { });
-
-    targets.Add("PushDockerImage", "docker image", () =>
-    {
-        var client = new DockerClientFactory().Invoke();
-        // await client.Images.PushImageAsync("", new ImagePushParameters()
-        // {
-        //     Tag = ""
-        // }, new AuthConfig(), new Progress<JSONMessage>())
-    });
-
-
-    var projects = pipelineObject.Services.Select(d => new {d.Project, d.Dockerfile}).ToList();
-    var publishSolutions = new PublishSolutions();
-
-    foreach (var service in projects)
-    {
-        targets.Add(service.Project,
-            async () => await publishSolutions.Invoke(service.Project));
+        await CreateHostBuilder(args).Build().RunAsync();
     }
 
-    targets.Add("Publish", "Publish solutions", DependsOn(pipelineObject.Services.Select(d => d.Project).ToArray()),
-        () => { });
-    targets.Add("BuildDockerImages", "Builds docker images", DependsOn("Publish"), async () =>
-    {
-        foreach (var project in projects)
-        {
-            var client = new DockerClientFactory().Invoke();
-            await new BuildDockerImage(client)
-            .Invoke(pipelineObject.Registry, project.Project, project.Dockerfile);
-        }
-    });
+    private static IHostBuilder CreateHostBuilder(string[] args) =>
+        new HostBuilder()
+            .ConfigureAppConfiguration((_, configApp) => configApp.AddCommandLine(args))
+            .ConfigureServices((_, services) =>
+            {
+                services.Scan(scan => scan
+                    .FromAssemblyOf<App>()
+                    .AddClasses()
+                    .AsImplementedInterfaces()
+                    .WithTransientLifetime());
+
+                services.AddSingleton(sp =>
+                    new SerializerBuilder()
+                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull)
+                        .DisableAliases()
+                        .Build()
+                );
+
+                services.AddSingleton(sp =>
+                    new DeserializerBuilder()
+                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                        .Build()
+                );
+
+                services.AddSingleton<ICommandArgs>(sp => new CommandCommandArgs(args));
 
 
-    targets.Add("WriteToFile", "Write objects to file", () =>
-    {
-        var yaml = K8sYaml.SerializeToMultipleObjects(objects);
-        File.WriteAllText(outputPathValue, yaml);
-    });
+                var rc = new RootCommand();
+                var domainOption =
+                    new Option<string>(new[] { "--domain" }, () => "localhost",
+                        "The domain to use for the build");
+                rc.AddGlobalOption(domainOption);
+                var environmentOption = new Option<string>(new[] { "--environment", "-e" },
+                    () => Environment.Development.ToString(),
+                    "The environment to use for the build");
+                rc.AddGlobalOption(environmentOption);
+
+                var parseResult = rc.Parse(args);
+                var domainValue = parseResult.CommandResult.GetValueForOption(domainOption)!;
+                services.AddSingleton<IDomain>(new Domain(domainValue));
+
+                var environmentValue = parseResult.CommandResult.GetValueForOption(environmentOption)!;
+                services.AddSingleton<IEnv>(sp => new Env(Enum.Parse<Environment>(environmentValue, true)));
+
+                services.AddSingleton(sp =>
+                {
+                    rc.RegisterCommands<Program>(sp);
+                    return rc;
+                });
+
+                services.AddSingleton(new DockerClientFactory().Invoke());
+
+                services.AddHostedService<App>();
+            })
+            .UseConsoleLifetime();
 }
 
-cmd.SetHandler(async () =>
+public class CommandCommandArgs : ICommandArgs
 {
-    // translate from System.CommandLine to Bullseye
-    var cmdLine = cmd.Parse(args);
-
-    var targetsToRun = cmdLine.CommandResult.Tokens.Select(token => token.Value).ToList();
-    if (targetsToRun.Count > 0)
+    public CommandCommandArgs(string[] args)
     {
-        targetsToRun.Add("WriteToFile");
+        Args = args;
     }
 
-    var options = new Options(Options.Definitions.Select(d => (d.Aliases[0],
-        cmdLine.GetValueForOption(
-            cmd.Options.OfType<Option<bool>>().Single(o => o.HasAlias(d.Aliases[0]))
-        )))
-    );
-    var targets = new Targets();
-    AddTargets(targets, cmdLine);
-    options.Parallel = true;
+    public string[] Args { get; set; }
+}
 
-    await targets.RunAndExitAsync(targetsToRun, options);
-});
-return await cmd.InvokeAsync(args);
+public interface ICommandArgs
+{
+    public string[] Args { get; set; }
+}

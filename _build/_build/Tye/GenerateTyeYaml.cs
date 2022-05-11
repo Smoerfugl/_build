@@ -51,7 +51,7 @@ public class GenerateTyeYaml : IGenerateTyeYaml
     private object? GetVariable(string variableName)
     {
         var assumedVariableName = $"{Env.ToString().ToUpper()}__{variableName}";
-        return Environment.GetEnvironmentVariable(assumedVariableName) ?? "";
+        return System.Environment.GetEnvironmentVariable(assumedVariableName) ?? "";
     }
 
     private string? GetEnvironmentKey()

@@ -7,8 +7,14 @@ public interface IGenerateIngressRoutesList
     List<IngressRoute> Invoke(Pipelines.Pipeline pipelineObject, string domainValue);
 }
 
-public class GenerateIngressRoutesRoutesList : IGenerateIngressRoutesList
+public class GenerateIngressRoutesList : IGenerateIngressRoutesList
 {
+    private readonly IEnv _env;
+
+    public GenerateIngressRoutesList(IEnv env)
+    {
+        _env = env;
+    }
     public List<IngressRoute> Invoke(Pipelines.Pipeline pipelineObject, string domainValue)
     {
         var ingressRoutes = GetIngressRoutes(pipelineObject, domainValue);
@@ -30,7 +36,7 @@ public class GenerateIngressRoutesRoutesList : IGenerateIngressRoutesList
             {
                 Name = service.Name,
                 Hostname = $"{service.Hostname}.{domainValue}",
-                Namespace = pipelineObject.Name,
+                Namespace = pipelineObject.GetNamespace(_env.Value),
                 Port = service.ServicePort,
                 ServiceName = service.Name
             }.Invoke();
