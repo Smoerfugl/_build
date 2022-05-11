@@ -7,7 +7,7 @@ namespace Build.Kubernetes;
 
 public interface IGenerateDeployments
 {
-    IEnumerable<V1Deployment> Invoke();
+    IEnumerable<V1Deployment> Invoke(string tagValue);
 }
 
 public class GenerateDeployments : IGenerateDeployments
@@ -22,7 +22,7 @@ public class GenerateDeployments : IGenerateDeployments
         _env = env;
         _environment = env.Value;
     }
-    public IEnumerable<V1Deployment> Invoke()
+    public IEnumerable<V1Deployment> Invoke(string tagValue)
     {
         if (_pipeline == null)
         {
@@ -40,14 +40,14 @@ public class GenerateDeployments : IGenerateDeployments
         }
 
         var deployments = _pipeline.Services.Select(d =>
-            GenerateDeployment(d, ns, environmentVariables)
+            GenerateDeployment(d, ns, environmentVariables, tagValue)
         );
 
         return deployments;
     }
 
     private static V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
-        IEnumerable<EnvironmentVariable> environmentVariables)
+        IEnumerable<EnvironmentVariable> environmentVariables, string tagValue)
     {
         var deployment = new V1Deployment()
         {
@@ -84,7 +84,7 @@ public class GenerateDeployments : IGenerateDeployments
                             {
                                 Name = pipelineService.Name,
                                 ImagePullPolicy = "Always",
-                                Image = null, //todo: image
+                                Image = !string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest", //todo: image
                                 Env = GetEnvVars(environmentVariables),
                                 Resources = new V1ResourceRequirements()
                                 {

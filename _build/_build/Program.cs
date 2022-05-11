@@ -2,6 +2,7 @@
 
 using System.CommandLine;
 using Build.Commands;
+using Build.Docker;
 using Build.Environments;
 using Build.Pipelines;
 using Microsoft.Extensions.Configuration;
@@ -71,6 +72,8 @@ internal class Program
                     rc.RegisterCommands<Program>(sp);
                     return rc;
                 });
+
+                services.AddSingleton(new DockerClientFactory().Invoke());
 
                 services.AddHostedService<App>();
             })

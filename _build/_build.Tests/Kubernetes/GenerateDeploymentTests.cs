@@ -57,7 +57,7 @@ public class GenerateDeploymentTests
         var ienv = Substitute.For<IEnv>();
         ienv.Value.ReturnsForAnyArgs(Environment.Development);
 
-        var deployments = new GenerateDeployments(getPipelineMock, ienv).Invoke().ToList();
+        var deployments = new GenerateDeployments(getPipelineMock, ienv).Invoke("latest").ToList();
 
         deployments.Should().NotBeNullOrEmpty();
         deployments.Count.Should().Be(1);

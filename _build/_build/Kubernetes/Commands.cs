@@ -37,6 +37,8 @@ public class Commands : ICommands
         _kubernetesConfigRepository = kubernetesConfigRepository;
     }
 
+    public static Option<string> Tag = new(new[]{"--tag"}, "Tag to use for the build");
+
     // public static Option<bool> GenerateIngressRoutes =
     //     new(new[] { "ingress", "-i" }, () => false, "Generate ingress routes");
 
@@ -57,7 +59,8 @@ public class Commands : ICommands
 
         var ingressCommand = new Command("ingress");
 
-        ingressCommand.SetHandler(async () =>
+        ingressCommand.SetHandler(
+            async (string tagValue)=>
         {
             var pipeline = _getPipeline.Invoke() ?? throw new Exception("Missing Pipeline.yml");
             var domain = _domain.Value ?? throw new Exception("Cannot generate ingress without domain");
@@ -71,7 +74,7 @@ public class Commands : ICommands
                         "Generating Certificates");
                     var @namespace = await TaskRunner(ctx, () => _generateNamespace.Invoke(), "Generating namespace");
                     var deployments =
-                        await TaskRunner(ctx, () => _generateDeployments.Invoke(), "Generate deployments");
+                        await TaskRunner(ctx, () => _generateDeployments.Invoke(tagValue), "Generate deployments");
                     var services = await TaskRunner(ctx, () => _generateServices.Invoke(deployments),
                         "Generating services");
 
@@ -87,7 +90,7 @@ public class Commands : ICommands
                     await TaskRunner(ctx, async () => await _kubernetesConfigRepository.WriteToFile(),
                         "Saving to file");
                 });
-        });
+        }, Tag);
 
 
         command.AddCommand(ingressCommand);
