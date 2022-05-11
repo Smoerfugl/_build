@@ -1,7 +1,7 @@
-using System.Runtime.InteropServices.ComTypes;
+using Build.Environments;
 using Build.Pipelines;
 
-namespace Build.Environments;
+namespace Build.Tye;
 
 public interface IGenerateTyeYaml
 {
@@ -14,7 +14,7 @@ public class GenerateTyeYaml : IGenerateTyeYaml
     public GenerateTyeYaml(IEnv env, IGetPipeline getPipeline)
 
     {
-        _pipelineObject = getPipeline.Invoke()!;
+        _pipelineObject = getPipeline.Invoke();
         Env = env;
         _envKey = GetEnvironmentKey();
     }

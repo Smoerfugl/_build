@@ -20,7 +20,7 @@ public class GetPipeline : IGetPipeline
     {
         if (!File.Exists("pipeline.yml"))
         {
-            return null;
+            throw new Exception("Pipeline file not found");
         }
 
         var pipelineFile = File.ReadAllText("pipeline.yml");
