@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices.ComTypes;
+using Build.Pipelines;
 
 namespace Build.Environments;
 
@@ -10,19 +11,20 @@ public class GenerateTyeYaml : IGenerateTyeYaml
 {
     private readonly Pipelines.Pipeline _pipelineObject;
 
-    public GenerateTyeYaml(Env env, Pipelines.Pipeline pipelineObject)
+    public GenerateTyeYaml(IEnv env, IGetPipeline getPipeline)
+
     {
-        _pipelineObject = pipelineObject;
+        _pipelineObject = getPipeline.Invoke()!;
         Env = env;
         _envKey = GetEnvironmentKey();
     }
 
-    public Env Env { get; set; }
+    public IEnv Env { get; set; }
     public string? _envKey;
 
     public TyeConfig Invoke()
     {
-        Console.WriteLine($"Generating Configuration for {Env.ToString().ToLower()}");
+        Console.WriteLine($"Generating Configuration for {Env.Value.ToString().ToLower()}");
 
         var environmentVariables = new List<EnvironmentVariable>();
         if (_envKey != null)

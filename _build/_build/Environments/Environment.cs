@@ -12,6 +12,7 @@ public class Env : IEnv
     }
 
     public Environment Value { get; }
+    public override string ToString() => Value.ToString();
 }
 public enum Environment
 {
