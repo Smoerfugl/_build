@@ -55,9 +55,13 @@ public class Commands : ICommands
     {
         var command = new Command("kubernetes", "Kubernetes related")
         {
+            Tag
         };
 
-        var ingressCommand = new Command("ingress");
+        var ingressCommand = new Command("ingress")
+        {
+            Tag
+        };
 
         ingressCommand.SetHandler(
             async (string tagValue)=>
