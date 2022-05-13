@@ -39,7 +39,7 @@ public class GenerateServices : IGenerateServices
                     new()
                     {
                         Name = "http",
-                        Protocol = "tcp",
+                        Protocol = "TCP",
                         Port = deployment.Spec.Template.Spec.Containers.First().Ports.First().ContainerPort,
                         TargetPort = deployment.Spec.Template.Spec.Containers.First().Ports.First().ContainerPort
                     }
