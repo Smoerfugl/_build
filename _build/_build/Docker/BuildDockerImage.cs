@@ -5,7 +5,7 @@ namespace Build.Docker;
 
 public interface IBuildDockerImage
 {
-    Task Invoke(string registry, string project, string dockerfile, string tag);
+    Task<ContainerTag?> Invoke(string registry, string project, string dockerfile, string tag);
 }
 
 public class BuildDockerImage : IBuildDockerImage
@@ -17,21 +17,23 @@ public class BuildDockerImage : IBuildDockerImage
         _client = client;
     }
 
-    public async Task Invoke(string registry, string project, string? dockerfile, string tag)
+    public async Task<ContainerTag?> Invoke(string registry, string project, string? dockerfile, string tag)
     {
         if (dockerfile == null)
         {
             Console.WriteLine($"Dockerfile not added skipping build on {project}");
-            return;
+            return null;
         }
 
         var imageBuilder = new ImageBuilder(_client);
-        await imageBuilder.BuildImage(new ImageBuilderParams($"{registry.TrimEnd('/')}/{project}", tag, dockerfile)
+        var imageName = await imageBuilder.BuildImage(new ImageBuilderParams($"{registry.TrimEnd('/')}/{project}", tag, dockerfile)
         {
             BuildArgs = new List<string>()
             {
                 $"PROJECT={project}"
             }
         });
+
+        return imageName;
     }
 }

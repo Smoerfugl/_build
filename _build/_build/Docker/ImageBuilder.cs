@@ -8,7 +8,7 @@ namespace Build.Docker;
 
 public interface IImageBuilder
 {
-    Task<bool> BuildImage(ImageBuilderParams imageBuilderParams);
+    Task<ContainerTag?> BuildImage(ImageBuilderParams imageBuilderParams);
 }
 
 public class ImageBuilderParams
@@ -35,21 +35,22 @@ public class ImageBuilder : IImageBuilder
         _dockerClient = dockerClient;
     }
 
-    public async Task<bool> BuildImage(ImageBuilderParams imageBuilderParams)
+    public async Task<ContainerTag?> BuildImage(ImageBuilderParams imageBuilderParams)
     {
         var processBuilder = new ShellProcessBuilder("docker");
 
+        var imageName = $"{imageBuilderParams.ImageName.ToLower()}:{imageBuilderParams.ImageTag.ToLower()}";
         processBuilder
             .WithArgument("build")
             .WithArgument(".")
             .WithArgument($"-f \"{imageBuilderParams.DockerfilePath}\"")
-            .WithArgument($"-t {imageBuilderParams.ImageName.ToLower()}:{imageBuilderParams.ImageTag.ToLower()}");
+            .WithArgument($"-t {imageName}");
 
         imageBuilderParams.BuildArgs.ForEach(d =>
             processBuilder.WithArgument($"--build-arg {d}")
         );
         
         await processBuilder.Run();
-        return true;
+        return new ContainerTag() { Name = imageName };
     }
 }
