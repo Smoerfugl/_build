@@ -76,6 +76,14 @@ public class GenerateDeployments : IGenerateDeployments
                 },
                 Template = new V1PodTemplateSpec()
                 {
+                    Metadata = new V1ObjectMeta()
+                    {
+                        Labels = new Dictionary<string, string>()
+                        {
+                            { "app.kubernetes.io/name", pipelineService.Name },
+                            { "app.kubernetes.io/part-of", ns }
+                        },
+                    },
                     Spec = new V1PodSpec()
                     {
                         Containers = new List<V1Container>()
