@@ -51,7 +51,7 @@ public class GenerateDeployments : IGenerateDeployments
     {
         var deployment = new V1Deployment()
         {
-            Kind = "deployment",
+            Kind = "Deployment",
             ApiVersion = "apps/v1",
             Metadata = new V1ObjectMeta()
             {
