@@ -62,7 +62,7 @@ public class Commands : ICommands
 
                         var buildTasks = pipeline?.Services.Select(service =>
                         {
-                            var t = ctx.AddTask($"Building {pipeline.Registry}/{service.Name}:{tagValue}");
+                            var t = ctx.AddTask($"Building {pipeline.Registry.ToLower()}/{service.Name.ToLower()}:{tagValue}");
                             t.IsIndeterminate = true;
                             if (string.IsNullOrWhiteSpace(service.Dockerfile))
                             {
@@ -76,7 +76,7 @@ public class Commands : ICommands
                                 imageBuild.ContinueWith(_ =>
                                 {
                                     t.Value = 100;
-                                    t.Description = $"Built {pipeline.Registry}/{service.Name}:{tagValue}";
+                                    t.Description = $"Built {pipeline.Registry.ToLower()}/{service.Project.ToLower()}:{tagValue}";
                                 });
                             return imageBuild;
                         });
