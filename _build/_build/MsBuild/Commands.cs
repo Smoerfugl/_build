@@ -56,7 +56,10 @@ public class Commands : ICommands
                                 .ContinueWith(_ => t.Value = 100);
                         });
 
-                        await Task.WhenAll(publishTasks);
+                        foreach (var publishTask in publishTasks)
+                        {
+                            await publishTask;
+                        }
 
                         var buildTasks = pipeline?.Services.Select(service =>
                         {
