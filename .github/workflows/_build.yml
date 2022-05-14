@@ -28,11 +28,17 @@ jobs:
       - run: |
           dotnet-gitversion /updateprojectfiles
 
+        working-directory: ${{ env.SLNPATH }}
+
+      - name: Build
+        run: |
           dotnet restore ${{ env.SLNNAME }}
           dotnet build --configuration Release --no-restore ${{ env.SLNNAME }}
+
+      - name: Test
+        run: |
           mkdir -p ${{ github.workspace }}/TestResults
           dotnet test --no-restore --logger trx --results-directory /tmp/TestResults ${{ env.SLNNAME }}
-        working-directory: ${{ env.SLNPATH }}
 
       - name: Test Reporter
         uses: dorny/test-reporter@v1.5.0
