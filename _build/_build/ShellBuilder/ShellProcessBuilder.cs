@@ -25,7 +25,7 @@ public class ShellProcessBuilder
         return this;
     }
 
-    public Task Run()
+    public Task<int> Run()
     {
         var process = Build();
         Console.WriteLine($"Running command {process.StartInfo.FileName} {process.StartInfo.Arguments}");
@@ -40,7 +40,7 @@ public class ShellProcessBuilder
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
         process.WaitForExit();
-        return Task.CompletedTask;
+        return Task.FromResult(process.ExitCode);
     }
 
     public Process Build()
