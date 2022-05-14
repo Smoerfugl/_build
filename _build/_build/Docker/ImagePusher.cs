@@ -22,5 +22,5 @@ public class ImagePusher : IImagePusher
 
 public class ContainerTag
 {
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 }

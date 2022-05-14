@@ -30,14 +30,7 @@ public class GenerateDeployments : IGenerateDeployments
         }
         var ns = _pipeline.GetNamespace(_environment);
 
-        var key = _pipeline.EnvironmentVariables.Keys.SingleOrDefault(d =>
-            string.Equals(d, _environment.ToString(), StringComparison.CurrentCultureIgnoreCase));
-
-        IEnumerable<EnvironmentVariable> environmentVariables = new List<EnvironmentVariable>();
-        if (key != null)
-        {
-            environmentVariables = _pipeline.EnvironmentVariables[key];
-        }
+        var environmentVariables = _pipeline.GetVariables(_env.Value);
 
         var deployments = _pipeline.Services.Select(d =>
             GenerateDeployment(d, ns, environmentVariables, tagValue)

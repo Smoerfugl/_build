@@ -10,6 +10,35 @@ public class Pipeline
     public Dictionary<string, List<EnvironmentVariable>> EnvironmentVariables { get; set; } = new();
     public string Name { get; set; } = null!;
 
+    public List<EnvironmentVariable> GetVariables(Environment env)
+    {
+        var environmentVariableKey =
+            EnvironmentVariables.Keys.SingleOrDefault(k =>
+                string.Equals(k, env.ToString(), StringComparison.CurrentCultureIgnoreCase));
+
+        if (environmentVariableKey != null &&
+            EnvironmentVariables.TryGetValue(environmentVariableKey, out var variables))
+        {
+            return variables.Select(d => GetVariable(env, d))
+                .ToList();
+        }
+
+        return new List<EnvironmentVariable>();
+    }
+
+    private EnvironmentVariable GetVariable(Environment env, EnvironmentVariable environmentVariable)
+    {
+        if (environmentVariable.Value != null)
+        {
+            return environmentVariable;
+        }
+
+        var assumedVariableName = $"{env.ToString().ToUpper()}__{environmentVariable.Name.ToUpper()}";
+        var value = System.Environment.GetEnvironmentVariable(assumedVariableName) ?? "";
+        environmentVariable.Value = value;
+        return environmentVariable;
+    }
+
     public string GetNamespace(Environment env)
     {
         return $"{env.ToString().ToLower()}-{Name}";
@@ -38,7 +67,6 @@ public class PipelineService
             { ResourceUnits.Memory, "256Mi" }
         }
     };
-
 }
 
 public class ServiceResources
