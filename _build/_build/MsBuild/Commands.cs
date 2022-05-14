@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.Text.Json;
 using Build.Commands;
 using Build.Docker;
 using Build.Pipelines;
@@ -63,7 +62,7 @@ public class Commands : ICommands
 
                         var buildTasks = pipeline?.Services.Select(service =>
                         {
-                            var t = ctx.AddTask($"Building container {service.Name}");
+                            var t = ctx.AddTask($"Building {pipeline.Registry}/{service.Name}:{tagValue}");
                             t.IsIndeterminate = true;
                             if (string.IsNullOrWhiteSpace(service.Dockerfile))
                             {
@@ -77,7 +76,7 @@ public class Commands : ICommands
                                 imageBuild.ContinueWith(_ =>
                                 {
                                     t.Value = 100;
-                                    t.Description = $"Built {pipeline.Registry}{service.Name}:{tagValue}";
+                                    t.Description = $"Built {pipeline.Registry}/{service.Name}:{tagValue}";
                                 });
                             return imageBuild;
                         });
