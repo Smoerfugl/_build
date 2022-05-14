@@ -14,7 +14,7 @@ public class GenerateDeployments : IGenerateDeployments
 {
     private readonly IEnv _env;
     private readonly Environment _environment;
-    private readonly Pipeline? _pipeline;
+    private readonly Pipeline _pipeline;
 
     public GenerateDeployments(IGetPipeline getPipeline, IEnv env)
     {
@@ -46,7 +46,7 @@ public class GenerateDeployments : IGenerateDeployments
         return deployments;
     }
 
-    private static V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
+    private V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
         IEnumerable<EnvironmentVariable> environmentVariables, string tagValue)
     {
         var deployment = new V1Deployment()
@@ -92,7 +92,7 @@ public class GenerateDeployments : IGenerateDeployments
                             {
                                 Name = pipelineService.Name,
                                 ImagePullPolicy = "Always",
-                                Image = !string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest", //todo: image
+                                Image = $"{_pipeline.Registry}/{pipelineService.Project.ToLower()}:{(!string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest")}", //todo: image
                                 Env = GetEnvVars(environmentVariables),
                                 Resources = new V1ResourceRequirements()
                                 {
