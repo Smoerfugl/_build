@@ -15,7 +15,7 @@ registry: registry.url
 name: projectName
 services:
 - name: serviceA
-    project: ServiceA/ServiceA.csproj
+    project: ServiceA
     dockerfile: Dockerfile
     servicePort: 3000
     replicas: 1
@@ -24,7 +24,7 @@ services:
     dockerfile: Dockerfile
     replicas: 1
     servicePort: 3000
-    project: ServiceB/ServiceB.csproj
+    project: ServiceB
     
 environmentVariables:
   production:
