@@ -33,7 +33,7 @@ public class IngressRouteRule
 
     public string Match { get; set; }
     public string Kind { get; set; } = "Rule";
-    public List<IngressRouteService> Services { get; set; } = new() { };
+    public List<IngressRouteService> Services { get; set; } = new();
     public List<IngressRouteMiddleware>? Middlewares { get; set; }
     public IngressRouteSpecTls Tls { get; set; } = null!;
     public string GetRawHostname() => Match.Replace("Host(`","").Replace("`)","");

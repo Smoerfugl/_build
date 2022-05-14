@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Build.Kubernetes;
 using Build.Pipelines;
 using Build.Environments;
+using Build.Tye;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;

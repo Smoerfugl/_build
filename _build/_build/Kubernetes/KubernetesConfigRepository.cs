@@ -38,7 +38,7 @@ public class KubernetesConfigRepository : IKubernetesConfigRepository
 
     public async Task WriteToFile()
     {
-        var yaml = K8sYaml.SerializeToMultipleObjects(_objects);
+        var yaml = K8SYaml.SerializeToMultipleObjects(_objects);
         await File.WriteAllTextAsync("kube.yml", yaml);
     }
 }

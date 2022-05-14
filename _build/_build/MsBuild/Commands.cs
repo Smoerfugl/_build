@@ -13,7 +13,8 @@ public class Commands : ICommands
     private readonly IBuildDockerImage _buildDockerImage;
     private readonly IImagePusher _imagePusher;
 
-    public Commands(IGetPipeline getPipeline, IPublishSolution publishSolutions, IBuildDockerImage buildDockerImage, IImagePusher imagePusher)
+    public Commands(IGetPipeline getPipeline, IPublishSolution publishSolutions, IBuildDockerImage buildDockerImage,
+        IImagePusher imagePusher)
     {
         _getPipeline = getPipeline;
         _publishSolutions = publishSolutions;
@@ -33,7 +34,7 @@ public class Commands : ICommands
         };
 
         var pipeline = _getPipeline.Invoke();
-        var projects = pipeline?.Services.Select(d => d.Project).ToList();
+        var projects = pipeline.Services.Select(d => d.Project).ToList();
 
         command.SetHandler(
             async (string tagValue, bool shouldPush) =>
@@ -42,11 +43,6 @@ public class Commands : ICommands
                     .HideCompleted(false)
                     .StartAsync(async ctx =>
                     {
-                        if (projects == null)
-                        {
-                            return;
-                        }
-
                         var publishTasks = projects.Select(project =>
                         {
                             var t = ctx.AddTask($"Publishing {project}");
@@ -60,9 +56,10 @@ public class Commands : ICommands
                             await publishTask;
                         }
 
-                        var buildTasks = pipeline?.Services.Select(service =>
+                        var buildTasks = pipeline.Services.Select(service =>
                         {
-                            var t = ctx.AddTask($"Building {pipeline.Registry.ToLower()}/{service.Name.ToLower()}:{tagValue}");
+                            var t = ctx.AddTask(
+                                $"Building {pipeline.Registry.ToLower()}/{service.Name.ToLower()}:{tagValue}");
                             t.IsIndeterminate = true;
                             if (string.IsNullOrWhiteSpace(service.Dockerfile))
                             {
@@ -71,37 +68,35 @@ public class Commands : ICommands
                             }
 
                             var imageBuild = _buildDockerImage
-                                .Invoke(pipeline.Registry, service?.Project, service.Dockerfile, tagValue);
-                                
-                                imageBuild.ContinueWith(_ =>
-                                {
-                                    t.Value = 100;
-                                    t.Description = $"Built {pipeline.Registry.ToLower()}/{service.Project.ToLower()}:{tagValue}";
-                                });
+                                .Invoke(pipeline.Registry, service.Project, service.Dockerfile, tagValue);
+
+                            imageBuild.ContinueWith(_ =>
+                            {
+                                t.Value = 100;
+                                t.Description =
+                                    $"Built {pipeline.Registry.ToLower()}/{service.Project.ToLower()}:{tagValue}";
+                            });
                             return imageBuild;
                         });
 
-                        if (buildTasks != null)
+                        var res = await Task.WhenAll(buildTasks!);
+                        var images = res.Where(d => d != null);
+                        if (shouldPush)
                         {
-                            var res = await Task.WhenAll(buildTasks);
-                            var images = res.Where(d => d != null);
-                            if (shouldPush == true)
+                            var pushTasks = images.Select(image =>
                             {
-                                var pushTasks = images.Select(image =>
+                                var t = ctx.AddTask($"Pushing {image?.Name}");
+                                t.IsIndeterminate = true;
+                                var task = _imagePusher.Invoke(image!);
+                                task.ContinueWith(_ =>
                                 {
-                                    var t = ctx.AddTask($"Pushing {image.Name}");
-                                    t.IsIndeterminate = true;
-                                    var task = _imagePusher.Invoke(image);
-                                    task.ContinueWith(_ =>
-                                    {
-                                        t.Value = 100;
-                                        t.Description = $"Pushed {image.Name}";
-                                    });
-                                    return task;
+                                    t.Value = 100;
+                                    t.Description = $"Pushed {image?.Name}";
                                 });
+                                return task;
+                            });
 
-                                await Task.WhenAll(pushTasks);
-                            }
+                            await Task.WhenAll(pushTasks);
                         }
                     });
             }, Tag, Push);

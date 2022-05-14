@@ -22,7 +22,7 @@ public class GenerateNamespace : IGenerateNamespace
     public GenerateNamespace(IGetPipeline getPipeline, IEnv env)
     {
         var pipeline = getPipeline.Invoke();
-        _ns = $"{env.Value.ToString()?.ToLower()}-{pipeline?.Name}";
+        _ns = $"{env.Value.ToString().ToLower()}-{pipeline.Name}";
     }
 
     public V1Namespace Invoke()

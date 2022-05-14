@@ -1,15 +1,6 @@
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using Build.Docker;
-using Build.Environments;
-using Build.Extensions;
-using Build.Kubernetes;
-using Build.MsBuild;
-using Build.Pipelines;
-using Bullseye;
 using Microsoft.Extensions.Hosting;
-using YamlDotNet.Serialization;
-using static Bullseye.Targets;
+using Spectre.Console;
 
 namespace Build;
 
@@ -48,6 +39,10 @@ public class App : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        AnsiConsole.Write(
+            new FigletText("Smørfugl._build")
+                .LeftAligned()
+                .Color(Color.Green));
         await _rootCommand.InvokeAsync(_commandArgs.Args);
         _applicationLifetime.StopApplication();
     }

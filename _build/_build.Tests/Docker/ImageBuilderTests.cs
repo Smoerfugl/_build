@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Build.Docker;
-using Docker.DotNet;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,17 +10,13 @@ namespace _build.Tests.Docker;
 
 public class BuildImageTests
 {
-    private readonly ITestOutputHelper _output;
-    private readonly DockerClient _client;
     private readonly ImageBuilder _imageBuilder;
 
     public BuildImageTests(ITestOutputHelper output)
     {
-        _output = output;
         var converter = new Converter(output);
         Console.SetOut(converter);
-        _client = new DockerClientFactory().Invoke();
-        _imageBuilder = new ImageBuilder(_client);
+        _imageBuilder = new ImageBuilder();
         WriteDockerFile();
     }
 

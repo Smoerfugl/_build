@@ -1,4 +1,4 @@
-namespace Build.Environments;
+namespace Build.Tye;
 
 public class TyeConfig
 {

@@ -14,9 +14,6 @@ public class DeploymentBuilder
             Template = new V1PodTemplateSpec()
             {
                 Metadata = new V1ObjectMeta()
-                {
-                    
-                }
             }
         },
     };
@@ -24,10 +21,6 @@ public class DeploymentBuilder
     private string _name = null!;
     private string _namespace = null!;
     private V1DeploymentSpec _spec = null!;
-
-    public DeploymentBuilder()
-    {
-    }
 
     public DeploymentBuilder WithName(string name)
     {

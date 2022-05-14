@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Docker.DotNet.Models;
 
 namespace Build.ShellBuilder;
 
@@ -29,8 +28,8 @@ public class ShellProcessBuilder
     {
         var process = Build();
         Console.WriteLine($"Running command {process.StartInfo.FileName} {process.StartInfo.Arguments}");
-        process.OutputDataReceived += (sender, args) => Console.WriteLine("- [✓] : {0}", args.Data);
-        process.ErrorDataReceived += (sender, args) =>
+        process.OutputDataReceived += (_, args) => Console.WriteLine("- [✓] : {0}", args.Data);
+        process.ErrorDataReceived += (_, args) =>
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("- [x]: {0}", args.Data);

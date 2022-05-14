@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Build.MsBuild;
-using Build.Pipelines;
 using FluentAssertions;
 using Xunit;
 

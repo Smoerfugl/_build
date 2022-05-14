@@ -3,6 +3,7 @@ using System.Linq;
 using Build.Environments;
 using Build.Kubernetes;
 using Build.Pipelines;
+using Build.Tye;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;

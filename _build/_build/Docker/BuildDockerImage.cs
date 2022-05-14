@@ -1,6 +1,3 @@
-using Build.Pipelines;
-using Docker.DotNet;
-
 namespace Build.Docker;
 
 public interface IBuildDockerImage
@@ -10,13 +7,6 @@ public interface IBuildDockerImage
 
 public class BuildDockerImage : IBuildDockerImage
 {
-    private readonly DockerClient _client;
-
-    public BuildDockerImage(DockerClient client)
-    {
-        _client = client;
-    }
-
     public async Task<ContainerTag?> Invoke(string registry, string project, string? dockerfile, string tag)
     {
         if (dockerfile == null)
@@ -25,7 +15,7 @@ public class BuildDockerImage : IBuildDockerImage
             return null;
         }
 
-        var imageBuilder = new ImageBuilder(_client);
+        var imageBuilder = new ImageBuilder();
         var imageName = await imageBuilder.BuildImage(new ImageBuilderParams($"{registry.TrimEnd('/')}/{project}", tag, dockerfile)
         {
             BuildArgs = new List<string>()

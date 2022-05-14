@@ -1,5 +1,4 @@
 using Build.Pipelines;
-using Environment = Build.Environments.Environment;
 
 namespace Build.Kubernetes;
 

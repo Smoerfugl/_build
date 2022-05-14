@@ -1,6 +1,5 @@
 using System.CommandLine;
 using Build.Commands;
-using Build.Environments;
 using Spectre.Console;
 using YamlDotNet.Serialization;
 
@@ -20,9 +19,6 @@ public class Commands : ICommands
     public void Register(CommandsBuilder builder)
     {
         var command = new Command("tye", "Tye command line interface");
-        {
-            
-        };
         
         command.SetHandler(
            () =>

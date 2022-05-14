@@ -33,7 +33,7 @@ internal class Program
                     .AsImplementedInterfaces()
                     .WithTransientLifetime());
 
-                services.AddSingleton(sp =>
+                services.AddSingleton(_ =>
                     new SerializerBuilder()
                         .WithNamingConvention(CamelCaseNamingConvention.Instance)
                         .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull)
@@ -41,13 +41,13 @@ internal class Program
                         .Build()
                 );
 
-                services.AddSingleton(sp =>
+                services.AddSingleton(_ =>
                     new DeserializerBuilder()
                         .WithNamingConvention(CamelCaseNamingConvention.Instance)
                         .Build()
                 );
 
-                services.AddSingleton<ICommandArgs>(sp => new CommandCommandArgs(args));
+                services.AddSingleton<ICommandArgs>(_ => new CommandCommandArgs(args));
 
 
                 var rc = new RootCommand();
@@ -65,7 +65,7 @@ internal class Program
                 services.AddSingleton<IDomain>(new Domain(domainValue));
 
                 var environmentValue = parseResult.CommandResult.GetValueForOption(environmentOption)!;
-                services.AddSingleton<IEnv>(sp => new Env(Enum.Parse<Environment>(environmentValue, true)));
+                services.AddSingleton<IEnv>(_ => new Env(Enum.Parse<Environment>(environmentValue, true)));
 
                 services.AddSingleton(sp =>
                 {

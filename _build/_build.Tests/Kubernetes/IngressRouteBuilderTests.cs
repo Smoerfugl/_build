@@ -1,11 +1,8 @@
 using System.Linq;
-using System.Text.Json;
 using Build.Kubernetes;
 using Build.Kubernetes.Builders;
-using Build.Yaml;
 using FluentAssertions;
 using k8s;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace _build.Tests.Kubernetes;

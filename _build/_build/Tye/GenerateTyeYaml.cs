@@ -9,32 +9,32 @@ public interface IGenerateTyeYaml
 }
 public class GenerateTyeYaml : IGenerateTyeYaml
 {
-    private readonly Pipelines.Pipeline _pipelineObject;
+    private readonly Pipeline _pipelineObject;
 
     public GenerateTyeYaml(IEnv env, IGetPipeline getPipeline)
 
     {
         _pipelineObject = getPipeline.Invoke();
         Env = env;
-        _envKey = GetEnvironmentKey();
+        EnvKey = GetEnvironmentKey();
     }
 
     public IEnv Env { get; set; }
-    public string? _envKey;
+    public readonly string? EnvKey;
 
     public TyeConfig Invoke()
     {
         Console.WriteLine($"Generating Configuration for {Env.Value.ToString().ToLower()}");
 
         var environmentVariables = new List<EnvironmentVariable>();
-        if (_envKey != null)
+        if (EnvKey != null)
         {
-            environmentVariables = _pipelineObject.EnvironmentVariables[_envKey]
+            environmentVariables = _pipelineObject.EnvironmentVariables[EnvKey]
                 .Select(d => new EnvironmentVariable(d.Name, d.Value ?? GetVariable(d.Name.ToString().ToUpper())))
                 .ToList();
         }
 
-        var services = _pipelineObject.Services.Select(p => new TyeService($"{p.Name}-{Env.ToString()}", p.Project)
+        var services = _pipelineObject.Services.Select(p => new TyeService($"{p.Name}-{Env.Value.ToString()}", p.Project)
         {
             Env = environmentVariables,
             Replicas = p.Replicas
@@ -43,16 +43,16 @@ public class GenerateTyeYaml : IGenerateTyeYaml
         var tyeFile = new TyeConfig()
         {
             Name = _pipelineObject.Name,
-            Namespace = $"{Env.ToString().ToLower()}-{_pipelineObject.Name}",
+            Namespace = $"{Env.ToString()?.ToLower()}-{_pipelineObject.Name}",
             Registry = _pipelineObject.Registry,
             Services = services
         };
         return tyeFile;
     }
 
-    private object? GetVariable(string variableName)
+    private object GetVariable(string variableName)
     {
-        var assumedVariableName = $"{Env.ToString().ToUpper()}__{variableName}";
+        var assumedVariableName = $"{Env.ToString()?.ToUpper()}__{variableName}";
         return System.Environment.GetEnvironmentVariable(assumedVariableName) ?? "";
     }
 

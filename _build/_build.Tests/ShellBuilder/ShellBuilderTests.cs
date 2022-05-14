@@ -9,11 +9,8 @@ namespace _build.Tests.ShellBuilder;
 
 public class ShellBuilderTests
 {
-    private readonly ITestOutputHelper _output;
-
     public ShellBuilderTests(ITestOutputHelper output)
     {
-        _output = output;
         var converter = new Converter(output);
         Console.SetOut(converter);
     }

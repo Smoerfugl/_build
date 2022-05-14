@@ -2,7 +2,7 @@ using k8s;
 
 namespace Build.Kubernetes;
 
-public static class K8sYaml
+public static class K8SYaml
 {
     public static string Serialize(object obj)
     {

@@ -1,14 +1,14 @@
-using Build.Environments;
+using Build.Tye;
 using Environment = Build.Environments.Environment;
 
 namespace Build.Pipelines;
 
 public class Pipeline
 {
-    public string Registry { get; set; } = null!;
-    public List<PipelineService> Services { get; set; } = new();
-    public Dictionary<string, List<EnvironmentVariable>> EnvironmentVariables { get; set; } = new();
-    public string Name { get; set; } = null!;
+    public string Registry { get; init; } = null!;
+    public List<PipelineService> Services { get; init; } = new();
+    public Dictionary<string, List<EnvironmentVariable>> EnvironmentVariables { get; init; } = new();
+    public string Name { get; init; } = null!;
 
     public List<EnvironmentVariable> GetVariables(Environment env)
     {
@@ -47,14 +47,14 @@ public class Pipeline
 
 public class PipelineService
 {
-    public string Name { get; set; } = null!;
-    public string? Dockerfile = null;
-    public int ServicePort { get; set; }
-    public int? Replicas { get; set; } = 1;
-    public string? Hostname { get; set; }
-    public string Project { get; set; } = null!;
+    public string Name { get; init; } = null!;
+    public string? Dockerfile { get; init; } = null;
+    public int ServicePort { get; init; }
+    public int? Replicas { get; init; } = 1;
+    public string? Hostname { get; init; }
+    public string Project { get; init; } = null!;
 
-    public ServiceResources Resources { get; set; } = new ServiceResources()
+    public ServiceResources Resources { get; init; } = new ServiceResources()
     {
         Limits = new Dictionary<ResourceUnits, string>()
         {
@@ -71,12 +71,14 @@ public class PipelineService
 
 public class ServiceResources
 {
-    public Dictionary<ResourceUnits, string> Limits { get; set; } = new();
-    public Dictionary<ResourceUnits, string> Requests { get; set; } = new();
+    public Dictionary<ResourceUnits, string> Limits { get; init; } = new();
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
+    public Dictionary<ResourceUnits, string> Requests { get; init; } = new();
 }
 
 public enum ResourceUnits
 {
+    // ReSharper disable once InconsistentNaming
     CPU,
     Memory
 }

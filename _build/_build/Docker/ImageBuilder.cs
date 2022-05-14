@@ -1,8 +1,4 @@
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Build.ShellBuilder;
-using Docker.DotNet;
-using Microsoft.Extensions.Logging;
 
 namespace Build.Docker;
 
@@ -28,13 +24,6 @@ public class ImageBuilderParams
 
 public class ImageBuilder : IImageBuilder
 {
-    private readonly DockerClient _dockerClient;
-
-    public ImageBuilder(DockerClient dockerClient)
-    {
-        _dockerClient = dockerClient;
-    }
-
     public async Task<ContainerTag?> BuildImage(ImageBuilderParams imageBuilderParams)
     {
         var processBuilder = new ShellProcessBuilder("docker");

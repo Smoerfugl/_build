@@ -1,5 +1,4 @@
 using System.CommandLine;
-using AutoMapper.Internal;
 using Build.Commands;
 using Build.Pipelines;
 using Spectre.Console;
