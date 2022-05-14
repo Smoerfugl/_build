@@ -4,7 +4,7 @@ namespace Build.Pipelines;
 
 public interface IGetPipeline
 {
-    Pipeline? Invoke();
+    Pipeline Invoke();
 }
 
 public class GetPipeline : IGetPipeline
@@ -16,7 +16,7 @@ public class GetPipeline : IGetPipeline
         _deserializer = deserializer;
     }
     
-    public Pipeline? Invoke()
+    public Pipeline Invoke()
     {
         if (!File.Exists("pipeline.yml"))
         {
