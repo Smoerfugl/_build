@@ -69,7 +69,7 @@ public class Commands : ICommands
                             }
 
                             var imageBuild = _buildDockerImage
-                                .Invoke(pipeline.Registry, service?.Name, service.Dockerfile, tagValue);
+                                .Invoke(pipeline.Registry, service?.Project, service.Dockerfile, tagValue);
                                 
                                 imageBuild.ContinueWith(_ =>
                                 {
