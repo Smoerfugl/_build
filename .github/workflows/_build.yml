@@ -27,7 +27,6 @@ jobs:
 
       - run: |
           dotnet-gitversion /updateprojectfiles
-
         working-directory: ${{ env.SLNPATH }}
 
       - name: Build
