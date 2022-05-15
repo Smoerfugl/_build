@@ -91,6 +91,7 @@ public class GenerateDeployments : IGenerateDeployments
                                 Resources = new V1ResourceRequirements()
                                 {
                                     Limits = GetResourceLimits(pipelineService.Resources.Limits),
+                                    Requests = GetResourceLimits(pipelineService.Resources.Requests),
                                 },
                                 Ports = new List<V1ContainerPort>()
                                 {
