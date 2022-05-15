@@ -65,7 +65,6 @@ public class GenerateDeployments : IGenerateDeployments
                     MatchLabels = new Dictionary<string, string>()
                     {
                         { "app.kubernetes.io/name", pipelineService.Name },
-                        { "app.kubernetes.io/part-of", ns }
                     }
                 },
                 Template = new V1PodTemplateSpec()
