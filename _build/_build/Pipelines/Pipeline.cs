@@ -58,13 +58,13 @@ public class PipelineService
     {
         Limits = new Dictionary<ResourceUnits, string>()
         {
-            { ResourceUnits.CPU, "250m" },
-            { ResourceUnits.Memory, "200Mi" }
+            { ResourceUnits.CPU, "500m" },
+            { ResourceUnits.Memory, "256Mi" }
         },
         Requests = new Dictionary<ResourceUnits, string>()
         {
-            { ResourceUnits.CPU, "500m" },
-            { ResourceUnits.Memory, "400Mi" }
+            { ResourceUnits.CPU, "250m" },
+            { ResourceUnits.Memory, "64Mi" }
         }
     };
 }
