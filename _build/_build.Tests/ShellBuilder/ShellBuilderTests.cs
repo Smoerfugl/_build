@@ -11,8 +11,6 @@ public class ShellBuilderTests
 {
     public ShellBuilderTests(ITestOutputHelper output)
     {
-        var converter = new Converter(output);
-        Console.SetOut(converter);
     }
     
     [Fact]
