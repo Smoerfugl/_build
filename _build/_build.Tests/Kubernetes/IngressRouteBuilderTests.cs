@@ -44,7 +44,7 @@ metadata:
   name: foo
   namespace: test
 spec:
-  entrypoints:
+  entryPoints:
   - web
   routes:
   - match: Host(`test.com`)
