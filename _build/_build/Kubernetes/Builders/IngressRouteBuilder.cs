@@ -67,7 +67,7 @@ public class IngressRouteBuilder
             },
             Spec = new IngressRouteSpec()
             {
-                Entrypoints = new List<string>()
+                EntryPoints = new List<string>()
                 {
                     _entrypoint.ToString().ToLower()
                 },

@@ -19,7 +19,7 @@ public class IngressRoute
 
 public class IngressRouteSpec
 {
-    public List<string> Entrypoints { get; set; } = new();
+    public List<string> EntryPoints { get; set; } = new();
     public List<IngressRouteRule> Routes { get; set; } = new();
     public IngressRouteSpecTls? Tls { get; set; }
 }

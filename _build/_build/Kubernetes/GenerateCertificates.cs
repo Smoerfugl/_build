@@ -19,7 +19,7 @@ public class GenerateCertificates : IGenerateCertificates
     private static IEnumerable<IngressRoute> GetHttpsRoutes(IEnumerable<IngressRoute> ingressRoutes)
     {
         var routes = ingressRoutes.Where(d =>
-            d.Spec.Entrypoints.Contains(
+            d.Spec.EntryPoints.Contains(
                 Entrypoint.Secure.ToString().ToLower()
             )
         ).ToList();
