@@ -14,8 +14,6 @@ public class BuildImageTests
 
     public BuildImageTests(ITestOutputHelper output)
     {
-        var converter = new Converter(output);
-        Console.SetOut(converter);
         _imageBuilder = new ImageBuilder();
         WriteDockerFile();
     }
