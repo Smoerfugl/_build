@@ -24,7 +24,7 @@ public class BuildImageTests
         var imageBuilderParams = new ImageBuilderParams("helo", "latest", "Dockerfile");
         var action = async () => await _imageBuilder.BuildImage(imageBuilderParams);
 
-        await action.Should().ThrowAsync();
+        await action.Should().ThrowAsync<Exception>();
     }
 
     [Fact]
