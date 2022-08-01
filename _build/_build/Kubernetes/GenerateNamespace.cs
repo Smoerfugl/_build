@@ -24,9 +24,9 @@ public class GenerateNamespace : IGenerateNamespace
     public V1Namespace Invoke()
     {
         var pipeline = _getPipeline.Invoke();
-        var _ns = $"{_env.Value.ToString().ToLower()}-{pipeline.Name}";
+        var ns = $"{_env.Value.ToString().ToLower()}-{pipeline.Name}";
         return new NamespaceBuilder()
-            .WithName(_ns)
+            .WithName(ns)
             .Build();
     }
 
