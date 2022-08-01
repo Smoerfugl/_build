@@ -13,34 +13,35 @@ public interface IGenerateDeployments
 
 public class GenerateDeployments : IGenerateDeployments
 {
+    private readonly IGetPipeline _getPipeline;
     private readonly IEnv _env;
     private readonly Environment _environment;
-    private readonly Pipeline _pipeline;
 
     public GenerateDeployments(IGetPipeline getPipeline, IEnv env)
     {
-        _pipeline = getPipeline.Invoke();
+        _getPipeline = getPipeline;
         _env = env;
         _environment = env.Value;
     }
     public IEnumerable<V1Deployment> Invoke(string tagValue)
     {
-        if (_pipeline == null)
+        var pipeline = _getPipeline.Invoke();
+        if (pipeline == null)
         {
             throw new Exception("Pipeline not found");
         }
-        var ns = _pipeline.GetNamespace(_environment);
+        var ns = pipeline.GetNamespace(_environment);
 
-        var environmentVariables = _pipeline.GetVariables(_env.Value);
+        var environmentVariables = pipeline.GetVariables(_env.Value);
 
-        var deployments = _pipeline.Services.Select(d =>
-            GenerateDeployment(d, ns, environmentVariables, tagValue)
+        var deployments = pipeline.Services.Select(pipelineService =>
+            GenerateDeployment(pipeline.Registry, pipelineService, ns, environmentVariables, tagValue)
         );
 
         return deployments;
     }
 
-    private V1Deployment GenerateDeployment(PipelineService pipelineService, string ns,
+    private V1Deployment GenerateDeployment(string pipelineRegistry, PipelineService pipelineService, string ns,
         IEnumerable<EnvironmentVariable> environmentVariables, string tagValue)
     {
         var deployment = new V1Deployment()
@@ -86,7 +87,7 @@ public class GenerateDeployments : IGenerateDeployments
                             {
                                 Name = pipelineService.Name,
                                 ImagePullPolicy = "Always",
-                                Image = $"{_pipeline.Registry}/{pipelineService.Project.ToLower()}:{(!string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest")}", //todo: image
+                                Image = $"{pipelineRegistry}/{pipelineService.Project.ToLower()}:{(!string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest")}", //todo: image
                                 Env = GetEnvVars(environmentVariables),
                                 Resources = new V1ResourceRequirements()
                                 {

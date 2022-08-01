@@ -12,21 +12,19 @@ public interface IGenerateNamespace
 
 public class GenerateNamespace : IGenerateNamespace
 {
-    private readonly string _ns;
-
-    // public GenerateNamespace(string ns)
-    // {
-    //     _ns = ns.ToLower();
-    // }
+    private readonly IGetPipeline _getPipeline;
+    private readonly IEnv _env;
 
     public GenerateNamespace(IGetPipeline getPipeline, IEnv env)
     {
-        var pipeline = getPipeline.Invoke();
-        _ns = $"{env.Value.ToString().ToLower()}-{pipeline.Name}";
+        _getPipeline = getPipeline;
+        _env = env;
     }
 
     public V1Namespace Invoke()
     {
+        var pipeline = _getPipeline.Invoke();
+        var _ns = $"{_env.Value.ToString().ToLower()}-{pipeline.Name}";
         return new NamespaceBuilder()
             .WithName(_ns)
             .Build();

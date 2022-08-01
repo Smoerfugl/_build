@@ -33,12 +33,11 @@ public class Commands : ICommands
             Push
         };
 
-        var pipeline = _getPipeline.Invoke();
-        var projects = pipeline.Services.Select(d => d.Project).ToList();
-
         command.SetHandler(
             async (string tagValue, bool shouldPush) =>
             {
+                var pipeline = _getPipeline.Invoke();
+                var projects = pipeline.Services.Select(d => d.Project).ToList();
                 await AnsiConsole.Progress()
                     .HideCompleted(false)
                     .StartAsync(async ctx =>
