@@ -24,7 +24,7 @@ public class GenerateIngressRoutes : IGenerateIngressRoutes
             .WithName(Name)
             .WithServiceName(ServiceName)
             .WithPort(Port)
-            .WithEntrypoint(Entrypoint.Secure)
+            .WithEntrypoint(Entrypoint.WebSecure)
             .WithNamespace(@namespace)
             .WithHostname(Hostname)
             .Build();

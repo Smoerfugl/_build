@@ -86,7 +86,7 @@ public class IngressRouteBuilder
                         Middlewares = _middleware?.ToList()
                     }
                 },
-                Tls = _entrypoint == Entrypoint.Secure ? new IngressRouteSpecTls(_hostname) : null
+                Tls = _entrypoint == Entrypoint.WebSecure ? new IngressRouteSpecTls(_hostname) : null
             }
         };
     }
