@@ -20,7 +20,7 @@ public class GenerateCertificates : IGenerateCertificates
     {
         var routes = ingressRoutes.Where(d =>
             d.Spec.EntryPoints.Contains(
-                Entrypoint.Secure.ToString().ToLower()
+                Entrypoint.WebSecure.ToString().ToLower()
             )
         ).ToList();
         return routes;
