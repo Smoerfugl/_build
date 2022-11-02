@@ -15,6 +15,7 @@ public class Commands : ICommands
     private readonly IGenerateDeployments _generateDeployments;
     private readonly IGenerateServices _generateServices;
     private readonly IKubernetesConfigRepository _kubernetesConfigRepository;
+    private readonly k8s.Kubernetes _kubernetesClient;
 
     public Commands(IGenerateIngressRoutesList generateIngressRoutesList,
         IGenerateCertificates generateCertificates,
@@ -23,7 +24,8 @@ public class Commands : ICommands
         IDomain domain,
         IGenerateDeployments generateDeployments,
         IGenerateServices generateServices,
-        IKubernetesConfigRepository kubernetesConfigRepository
+        IKubernetesConfigRepository kubernetesConfigRepository,
+        k8s.Kubernetes kubernetesClient
     )
     {
         _generateIngressRoutesList = generateIngressRoutesList;
@@ -34,12 +36,10 @@ public class Commands : ICommands
         _generateDeployments = generateDeployments;
         _generateServices = generateServices;
         _kubernetesConfigRepository = kubernetesConfigRepository;
+        _kubernetesClient = kubernetesClient;
     }
 
     public static Option<string> Tag = new(new[]{"--tag"}, "Tag to use for the build");
-
-    // public static Option<bool> GenerateIngressRoutes =
-    //     new(new[] { "ingress", "-i" }, () => false, "Generate ingress routes");
 
     private Task<T> TaskRunner<T>(ProgressContext p, Func<T> a, string name)
     {
@@ -91,11 +91,17 @@ public class Commands : ICommands
                         );
                     
                     await TaskRunner(ctx, async () => await _kubernetesConfigRepository.WriteToFile(),
-                        "Saving to file");
+                        "Saving to "+_kubernetesConfigRepository.FileName);
                 });
         }, Tag);
 
-
+        var applyCommand = new Command("apply");
+        applyCommand.SetHandler(() =>
+        {
+            var fileName = _kubernetesConfigRepository.FileName;
+            var file = File.ReadAllTextAsync(fileName);
+        });
+        command.AddCommand(applyCommand);
         command.AddCommand(ingressCommand);
 
         builder.Add(command);

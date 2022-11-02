@@ -5,6 +5,7 @@ using Build.Commands;
 using Build.Docker;
 using Build.Environments;
 using Build.Pipelines;
+using k8s;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -48,8 +49,7 @@ internal class Program
                 );
 
                 services.AddSingleton<ICommandArgs>(_ => new CommandCommandArgs(args));
-
-
+                services.AddSingleton(new k8s.Kubernetes(KubernetesClientConfiguration.BuildDefaultConfig()));
                 var rc = new RootCommand();
                 var domainOption =
                     new Option<string>(new[] { "--domain" }, () => "localhost",
