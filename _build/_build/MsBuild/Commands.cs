@@ -39,6 +39,8 @@ public class Commands : ICommands
                 var pipeline = _getPipeline.Invoke();
                 var projects = pipeline.Services.Select(d => d.Project).ToList();
                 await AnsiConsole.Progress()
+                    .AutoClear(false)
+                    .AutoRefresh(false)
                     .HideCompleted(false)
                     .StartAsync(async ctx =>
                     {
