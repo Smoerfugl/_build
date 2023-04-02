@@ -54,10 +54,18 @@ public class Commands : ICommands
                 },
                 EnvironmentVariables = new Dictionary<string, List<EnvironmentVariable>>()
                 {
-                    {"Production", new List<EnvironmentVariable>()
                     {
-                        new("Foo", "Bar")
-                    }},
+                        "production", new List<EnvironmentVariable>()
+                        {
+                            new("Foo", "Bar")
+                        }
+                    },
+                    {
+                        "staging", new List<EnvironmentVariable>()
+                        {
+                            new("Foo", "Bar")
+                        }
+                    },
                 }
             };
             var ser = new SerializerBuilder()
