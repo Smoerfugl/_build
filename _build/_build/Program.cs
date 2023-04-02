@@ -44,6 +44,7 @@ internal class Program
                 services.AddSingleton(_ =>
                     new DeserializerBuilder()
                         .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                        .IgnoreUnmatchedProperties()
                         .Build()
                 );
 
