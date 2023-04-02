@@ -6,6 +6,7 @@ public interface IKubernetesConfigRepository
 {
     void AddToManifesto(params object[] objects);
     Task WriteToFile();
+    string Get();
 }
 public class KubernetesConfigRepository : IKubernetesConfigRepository
 {
@@ -40,5 +41,10 @@ public class KubernetesConfigRepository : IKubernetesConfigRepository
     {
         var yaml = K8SYaml.SerializeToMultipleObjects(_objects);
         await File.WriteAllTextAsync("kube.yml", yaml);
+    }
+
+    public string Get()
+    {
+        return K8SYaml.SerializeToMultipleObjects(_objects);
     }
 }
