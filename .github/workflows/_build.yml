@@ -85,4 +85,4 @@ jobs:
 
       - name: Push to nuget.org
         run: |
-          dotnet nuget push -s nuget/*.nupkg --api-key ${{ secrets.NUGET_ORG_APIKEY }} -s https://api.nuget.org/v3/index.json
+          dotnet nuget push nuget/*.nupkg --api-key ${{ secrets.NUGET_ORG_APIKEY }} -s https://api.nuget.org/v3/index.json
