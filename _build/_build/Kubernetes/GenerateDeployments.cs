@@ -23,6 +23,7 @@ public class GenerateDeployments : IGenerateDeployments
         _env = env;
         _environment = env.Value;
     }
+
     public IEnumerable<V1Deployment> Invoke(string tagValue)
     {
         var pipeline = _getPipeline.Invoke();
@@ -30,6 +31,7 @@ public class GenerateDeployments : IGenerateDeployments
         {
             throw new Exception("Pipeline not found");
         }
+
         var ns = pipeline.GetNamespace(_environment);
 
         var environmentVariables = pipeline.GetVariables(_env.Value);
@@ -65,7 +67,7 @@ public class GenerateDeployments : IGenerateDeployments
                 {
                     MatchLabels = new Dictionary<string, string>()
                     {
-                        { "app.kubernetes.io/name", pipelineService.Name },                    
+                        { "app.kubernetes.io/name", pipelineService.Name },
                         { "app.kubernetes.io/part-of", ns }
                     }
                 },
@@ -87,7 +89,8 @@ public class GenerateDeployments : IGenerateDeployments
                             {
                                 Name = pipelineService.Name,
                                 ImagePullPolicy = "Always",
-                                Image = $"{pipelineRegistry}/{pipelineService.Project.ToLower()}:{(!string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest")}", //todo: image
+                                Image =
+                                    $"{pipelineRegistry}/{pipelineService.Project.ToLower()}:{(!string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest")}", //todo: image
                                 Env = GetEnvVars(environmentVariables),
                                 Resources = new V1ResourceRequirements()
                                 {
@@ -101,6 +104,9 @@ public class GenerateDeployments : IGenerateDeployments
                                         ContainerPort = pipelineService.ServicePort
                                     }
                                 },
+                                LivenessProbe = GetLivenessProbe(pipelineService),
+                                ReadinessProbe = GetReadinessProbe(pipelineService),
+                                StartupProbe = GetLivenessProbe(pipelineService),
                             }
                         }
                     }
@@ -109,6 +115,32 @@ public class GenerateDeployments : IGenerateDeployments
         };
 
         return deployment;
+    }
+
+    private V1Probe? GetReadinessProbe(PipelineService pipelineService)
+    {
+        return GetProbe(pipelineService.Readiness, pipelineService);
+    }
+
+    private V1Probe? GetLivenessProbe(PipelineService pipelineService)
+    {
+        return GetProbe(pipelineService.Liveness, pipelineService);
+    }
+
+    private static V1Probe? GetProbe(string? str, PipelineService pipelineService)
+    {
+        return string.IsNullOrWhiteSpace(str)
+            ? new V1Probe()
+            {
+                HttpGet = new V1HTTPGetAction()
+                {
+                    Port = pipelineService.ServicePort,
+                    Path = pipelineService.Liveness,
+                },
+                FailureThreshold = 5,
+                InitialDelaySeconds = 3
+            }
+            : null;
     }
 
     private static List<V1EnvVar> GetEnvVars(IEnumerable<EnvironmentVariable> environmentVariables)
