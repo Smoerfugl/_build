@@ -35,10 +35,11 @@ public class GenerateDeploymentTests
     }
 
     [Fact]
-    public void GivenPipeline_HealthCheckShouldExist()
+    public void GivenPipeline_ReadinessProbe()
     {
         var expected = "/health";
-        _pipeline.Services.First().Liveness = expected;
+        _pipeline.Services.First().Readiness = expected;
+        
         var deployments = new GenerateDeployments(_getPipelineMock, _ienv).Invoke("latest").ToList().First();
 
         var pod = deployments.Spec
@@ -46,9 +47,26 @@ public class GenerateDeploymentTests
             .Spec
             .Containers
             .First();
-
+        
         pod.ReadinessProbe.HttpGet.Path
             .Should().Be(expected);
+    }
+
+    [Fact]
+    public void GivenPipeline_LivelinessShouldNotExist()
+    {
+        var expected = "/health";
+        _pipeline.Services.First().Readiness = expected;
+        
+        var deployments = new GenerateDeployments(_getPipelineMock, _ienv).Invoke("latest").ToList().First();
+
+        var pod = deployments.Spec
+            .Template
+            .Spec
+            .Containers
+            .First();
+        pod.LivenessProbe.Should()
+            .BeNull();
     }
 
     private static Pipeline CreatePipeline()

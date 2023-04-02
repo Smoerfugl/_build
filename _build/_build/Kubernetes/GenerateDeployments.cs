@@ -106,7 +106,7 @@ public class GenerateDeployments : IGenerateDeployments
                                 },
                                 LivenessProbe = GetLivenessProbe(pipelineService),
                                 ReadinessProbe = GetReadinessProbe(pipelineService),
-                                StartupProbe = GetLivenessProbe(pipelineService),
+                                StartupProbe = GetStartupProbe(pipelineService),
                             }
                         }
                     }
@@ -117,31 +117,25 @@ public class GenerateDeployments : IGenerateDeployments
         return deployment;
     }
 
-    private V1Probe? GetReadinessProbe(PipelineService pipelineService)
-    {
-        return GetProbe(pipelineService.Readiness, pipelineService);
-    }
+    private V1Probe? GetStartupProbe(PipelineService pipelineService) => GetProbe(pipelineService.StartupProbe, pipelineService);
 
-    private V1Probe? GetLivenessProbe(PipelineService pipelineService)
-    {
-        return GetProbe(pipelineService.Liveness, pipelineService);
-    }
+    private V1Probe? GetReadinessProbe(PipelineService pipelineService) => GetProbe(pipelineService.Readiness, pipelineService);
 
-    private static V1Probe? GetProbe(string? str, PipelineService pipelineService)
-    {
-        return string.IsNullOrWhiteSpace(str)
+    private V1Probe? GetLivenessProbe(PipelineService pipelineService) => GetProbe(pipelineService.Liveness, pipelineService);
+
+    private static V1Probe? GetProbe(string? str, PipelineService pipelineService) =>
+        !string.IsNullOrWhiteSpace(str)
             ? new V1Probe()
             {
                 HttpGet = new V1HTTPGetAction()
                 {
                     Port = pipelineService.ServicePort,
-                    Path = pipelineService.Liveness,
+                    Path = str,
                 },
                 FailureThreshold = 5,
                 InitialDelaySeconds = 3
             }
             : null;
-    }
 
     private static List<V1EnvVar> GetEnvVars(IEnumerable<EnvironmentVariable> environmentVariables)
     {

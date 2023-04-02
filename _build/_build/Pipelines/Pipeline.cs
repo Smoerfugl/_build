@@ -57,6 +57,8 @@ public class PipelineService
     public string? Liveness { get; set; }
     public string? Readiness { get; set; }
 
+    public string? StartupProbe { get; set; }
+
     public ServiceResources Resources { get; init; } = new ServiceResources()
     {
         Limits = new Dictionary<ResourceUnits, string>()
