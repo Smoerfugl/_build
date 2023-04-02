@@ -13,7 +13,7 @@ public class DeploymentBuilder
         {
             Template = new V1PodTemplateSpec()
             {
-                Metadata = new V1ObjectMeta()
+                Metadata = new V1ObjectMeta(),
             }
         },
     };

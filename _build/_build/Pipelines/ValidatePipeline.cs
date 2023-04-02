@@ -1,23 +1,26 @@
 using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace Build.Pipelines;
 
-public interface IGetPipeline
+public interface IValidatePipeline
 {
     Pipeline Invoke();
 }
 
-public class GetPipeline : IGetPipeline
+public class ValidatePipeline : IValidatePipeline
 {
-    private readonly IDeserializer _deserializer;
     private readonly IGetPipelineYaml _getPipelineYaml;
+    private IDeserializer _deserializer;
 
-    public GetPipeline(IDeserializer deserializer, IGetPipelineYaml getPipelineYaml)
+    public ValidatePipeline(IGetPipelineYaml getPipelineYaml)
     {
-        _deserializer = deserializer;
         _getPipelineYaml = getPipelineYaml;
+        _deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
     }
-    
+
     public Pipeline Invoke()
     {
         var pipelineFile = _getPipelineYaml.Invoke();

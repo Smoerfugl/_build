@@ -54,6 +54,9 @@ public class PipelineService
     public string? Hostname { get; init; }
     public string Project { get; init; } = null!;
 
+    public string? Liveness { get; set; }
+    public string? Readiness { get; set; }
+
     public ServiceResources Resources { get; init; } = new ServiceResources()
     {
         Limits = new Dictionary<ResourceUnits, string>()
@@ -72,6 +75,7 @@ public class PipelineService
 public class ServiceResources
 {
     public Dictionary<ResourceUnits, string> Limits { get; init; } = new();
+
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public Dictionary<ResourceUnits, string> Requests { get; init; } = new();
 }

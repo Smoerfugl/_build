@@ -12,15 +12,53 @@ namespace _build.Tests.Kubernetes;
 
 public class GenerateDeploymentTests
 {
+    private readonly IEnv _ienv;
+    private readonly IGetPipeline _getPipelineMock;
+    private readonly Pipeline _pipeline;
+
+    public GenerateDeploymentTests()
+    {
+        _pipeline = CreatePipeline();
+        _getPipelineMock = Substitute.For<IGetPipeline>();
+        _getPipelineMock.Invoke().ReturnsForAnyArgs(_pipeline);
+        _ienv = Substitute.For<IEnv>();
+        _ienv.Value.ReturnsForAnyArgs(Environment.Development);
+    }
+
     [Fact]
     public void GivenPipeline_ShouldReturnDeployment()
+    {
+        var deployments = new GenerateDeployments(_getPipelineMock, _ienv).Invoke("latest").ToList();
+
+        var deployment = deployments.First();
+        deployment.Spec.Replicas.Should().Be(_pipeline.Services.First().Replicas);
+    }
+
+    [Fact]
+    public void GivenPipeline_HealthCheckShouldExist()
+    {
+        var expected = "/health";
+        _pipeline.Services.First().Liveness = expected;
+        var deployments = new GenerateDeployments(_getPipelineMock, _ienv).Invoke("latest").ToList().First();
+
+        var pod = deployments.Spec
+            .Template
+            .Spec
+            .Containers
+            .First();
+
+        pod.ReadinessProbe.HttpGet.Path
+            .Should().Be(expected);
+    }
+
+    private static Pipeline CreatePipeline()
     {
         var pipeline = new Pipeline()
         {
             Name = "test",
             Services = new List<PipelineService>()
             {
-                new PipelineService()
+                new()
                 {
                     Name = "Some.Service",
                     Hostname = "Some.Service.com",
@@ -48,20 +86,11 @@ public class GenerateDeploymentTests
                 {
                     "staging", new List<EnvironmentVariable>()
                     {
-                        new EnvironmentVariable("Some.Variable", "Some.Value")
+                        new("Some.Variable", "Some.Value")
                     }
                 }
             }
         };
-        var getPipelineMock = Substitute.For<IGetPipeline>();
-        getPipelineMock.Invoke().ReturnsForAnyArgs(pipeline);
-        var ienv = Substitute.For<IEnv>();
-        ienv.Value.ReturnsForAnyArgs(Environment.Development);
-
-        var deployments = new GenerateDeployments(getPipelineMock, ienv).Invoke("latest").ToList();
-
-        deployments.Should().NotBeNullOrEmpty();
-        deployments.Count.Should().Be(1);
-        deployments.First().Spec.Replicas.Should().Be(pipeline.Services.First().Replicas);
+        return pipeline;
     }
 }
