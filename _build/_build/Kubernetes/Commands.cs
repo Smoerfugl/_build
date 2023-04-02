@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using Build.Commands;
 using Build.Pipelines;
 using Spectre.Console;
@@ -36,8 +37,9 @@ public class Commands : ICommands
         _kubernetesConfigRepository = kubernetesConfigRepository;
     }
 
-    public static Option<string> Tag = new(new[]{"--tag"}, "Tag to use for the build");
+    public static Option<string> Tag = new(new[] { "--tag" }, "Tag to use for the build");
 
+    public static Option<string> File = new(new[] { "-f", "--file" }, "Output to file");
     // public static Option<bool> GenerateIngressRoutes =
     //     new(new[] { "ingress", "-i" }, () => false, "Generate ingress routes");
 
@@ -59,41 +61,52 @@ public class Commands : ICommands
 
         var ingressCommand = new Command("ingress")
         {
-            Tag
+            Tag,
+            File
         };
 
         ingressCommand.SetHandler(
-            async (string tagValue)=>
-        {
-            var pipeline = _getPipeline.Invoke() ?? throw new Exception("Missing Pipeline.yml");
-            var domain = _domain.Value ?? throw new Exception("Cannot generate ingress without domain");
+            async context =>
+            {
+                var tagValue = context.ParseResult.GetValueForOption(Tag);
+                var pipeline = _getPipeline.Invoke() ?? throw new Exception("Missing Pipeline.yml");
+                var domain = _domain.Value ?? throw new Exception("Cannot generate ingress without domain");
 
-            await AnsiConsole.Progress()
-                .StartAsync(async ctx =>
-                {
-                    var ingressRoutes = await TaskRunner(ctx, () => _generateIngressRoutesList.Invoke(pipeline, domain),
-                        "Generating ingress routes");
-                    var certificates = await TaskRunner(ctx, () => _generateCertificates.Invoke(ingressRoutes),
-                        "Generating Certificates");
-                    var @namespace = await TaskRunner(ctx, () => _generateNamespace.Invoke(), "Generating namespace");
-                    var deployments =
-                        await TaskRunner(ctx, () => _generateDeployments.Invoke(tagValue), "Generate deployments");
-                    var services = await TaskRunner(ctx, () => _generateServices.Invoke(deployments),
-                        "Generating services");
+                await AnsiConsole.Progress()
+                    .StartAsync(async ctx =>
+                    {
+                        var ingressRoutes = await TaskRunner(ctx,
+                            () => _generateIngressRoutesList.Invoke(pipeline, domain),
+                            "Generating ingress routes");
+                        var certificates = await TaskRunner(ctx, () => _generateCertificates.Invoke(ingressRoutes),
+                            "Generating Certificates");
+                        var @namespace = await TaskRunner(ctx, () => _generateNamespace.Invoke(),
+                            "Generating namespace");
+                        var deployments =
+                            await TaskRunner(ctx, () => _generateDeployments.Invoke(tagValue), "Generate deployments");
+                        var services = await TaskRunner(ctx, () => _generateServices.Invoke(deployments),
+                            "Generating services");
 
-
-                    _kubernetesConfigRepository.AddToManifesto(
-                        ingressRoutes,
-                        certificates,
-                        @namespace,
-                        deployments,
-                        services
+                        _kubernetesConfigRepository.AddToManifesto(
+                            ingressRoutes,
+                            certificates,
+                            @namespace,
+                            deployments,
+                            services
                         );
-                    
-                    await TaskRunner(ctx, async () => await _kubernetesConfigRepository.WriteToFile(),
-                        "Saving to file");
-                });
-        }, Tag);
+
+                        var file = context.ParseResult.GetValueForOption(File);
+                        if (!string.IsNullOrWhiteSpace(file))
+                        {
+                            await TaskRunner(ctx, async () => await _kubernetesConfigRepository.WriteToFile(),
+                                "Saving to file");
+                        }
+                        else
+                        {
+                            context.Console.Write(_kubernetesConfigRepository.Get());
+                        }
+                    });
+            });
 
 
         command.AddCommand(ingressCommand);
