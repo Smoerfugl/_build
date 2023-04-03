@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Build.Commands;
 using Build.Tye;
+using k8s.Models;
 using YamlDotNet.Serialization;
 
 namespace Build.Pipelines;
@@ -34,8 +35,51 @@ public class Commands : ICommands
                         Name = "my-app",
                         Dockerfile = "dockerfile",
                         Hostname = "app",
-                        Liveness = "/health",
-                        Readiness = "/health",
+                        HealthChecks = new Dictionary<string, V1Probe>()
+                        {
+                            {
+                                "liveness", new V1Probe()
+                                {
+                                    HttpGet = new V1HTTPGetAction()
+                                    {
+                                        Port = 3000,
+                                        Path = "/healthz",
+                                        Scheme = "http"
+                                    },
+                                    FailureThreshold = 5,
+                                    InitialDelaySeconds = 60,
+                                    SuccessThreshold = 5,
+                                    PeriodSeconds = 10,
+                                }
+                            },
+                            {
+                                "readiness", new V1Probe()
+                                {
+                                    HttpGet = new V1HTTPGetAction()
+                                    {
+                                        Port = 3000,
+                                        Path = "/healthz",
+                                        Scheme = "http"
+                                    },
+                                    FailureThreshold = 5,
+                                    InitialDelaySeconds = 60,
+                                    SuccessThreshold = 5,
+                                    PeriodSeconds = 10,
+                                }
+                            },
+                            {
+                                "startup",  new V1Probe()
+                                {
+                                    HttpGet = new V1HTTPGetAction()
+                                    {
+                                        Port = 3000,
+                                        Path = "/healthz",
+                                        Scheme = "http",
+                                    }
+                                }
+                                
+                            }
+                        },
                         Project = "Foo.Bar",
                         Replicas = 2,
                         Resources = new ServiceResources()

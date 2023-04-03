@@ -5,6 +5,7 @@ using Build.Kubernetes;
 using Build.Pipelines;
 using Build.Tye;
 using FluentAssertions;
+using k8s.Models;
 using NSubstitute;
 using Xunit;
 
@@ -38,8 +39,15 @@ public class GenerateDeploymentTests
     public void GivenPipeline_ReadinessProbe()
     {
         var expected = "/health";
-        _pipeline.Services.First().Readiness = expected;
-        
+        _pipeline.Services.First().HealthChecks.Add("readiness", new V1Probe()
+        {
+            HttpGet = new V1HTTPGetAction()
+            {
+                Port = 3000,
+                Path = expected
+            }
+        });
+
         var deployments = new GenerateDeployments(_getPipelineMock, _ienv).Invoke("latest").ToList().First();
 
         var pod = deployments.Spec
@@ -47,7 +55,7 @@ public class GenerateDeploymentTests
             .Spec
             .Containers
             .First();
-        
+
         pod.ReadinessProbe.HttpGet.Path
             .Should().Be(expected);
     }
@@ -56,8 +64,15 @@ public class GenerateDeploymentTests
     public void GivenPipeline_LivelinessShouldNotExist()
     {
         var expected = "/health";
-        _pipeline.Services.First().Readiness = expected;
-        
+        _pipeline.Services.First().HealthChecks.Add("readiness", new V1Probe()
+        {
+            HttpGet = new V1HTTPGetAction()
+            {
+                Port = 3000,
+                Path = expected
+            }
+        });
+
         var deployments = new GenerateDeployments(_getPipelineMock, _ienv).Invoke("latest").ToList().First();
 
         var pod = deployments.Spec

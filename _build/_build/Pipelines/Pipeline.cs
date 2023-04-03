@@ -1,4 +1,5 @@
 using Build.Tye;
+using k8s.Models;
 using Environment = Build.Environments.Environment;
 
 namespace Build.Pipelines;
@@ -6,8 +7,11 @@ namespace Build.Pipelines;
 public class Pipeline
 {
     public string Registry { get; init; } = null!;
+
     public List<PipelineService> Services { get; init; } = new();
+
     public Dictionary<string, List<EnvironmentVariable>> EnvironmentVariables { get; init; } = new();
+
     public string Name { get; init; } = null!;
 
     public List<EnvironmentVariable> GetVariables(Environment env)
@@ -48,16 +52,18 @@ public class Pipeline
 public class PipelineService
 {
     public string Name { get; init; } = null!;
+
     public string? Dockerfile { get; init; } = null;
+
     public int ServicePort { get; init; }
+
     public int? Replicas { get; init; } = 1;
+
     public string? Hostname { get; init; }
+
     public string Project { get; init; } = null!;
 
-    public string? Liveness { get; set; }
-    public string? Readiness { get; set; }
-
-    public string? StartupProbe { get; set; }
+    public Dictionary<string, V1Probe> HealthChecks { get; set; } = new();
 
     public ServiceResources Resources { get; init; } = new ServiceResources()
     {

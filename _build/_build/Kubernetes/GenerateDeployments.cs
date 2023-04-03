@@ -43,8 +43,12 @@ public class GenerateDeployments : IGenerateDeployments
         return deployments;
     }
 
-    private V1Deployment GenerateDeployment(string pipelineRegistry, PipelineService pipelineService, string ns,
-        IEnumerable<EnvironmentVariable> environmentVariables, string tagValue)
+    private V1Deployment GenerateDeployment(
+        string pipelineRegistry,
+        PipelineService pipelineService,
+        string ns,
+        IEnumerable<EnvironmentVariable> environmentVariables,
+        string tagValue)
     {
         var deployment = new V1Deployment()
         {
@@ -90,7 +94,7 @@ public class GenerateDeployments : IGenerateDeployments
                                 Name = pipelineService.Name,
                                 ImagePullPolicy = "Always",
                                 Image =
-                                    $"{pipelineRegistry}/{pipelineService.Project.ToLower()}:{(!string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest")}", //todo: image
+                                    $"{pipelineRegistry}/{pipelineService.Project.ToLower()}:{(!string.IsNullOrWhiteSpace(tagValue) ? tagValue : "latest")}",//todo: image
                                 Env = GetEnvVars(environmentVariables),
                                 Resources = new V1ResourceRequirements()
                                 {
@@ -117,25 +121,18 @@ public class GenerateDeployments : IGenerateDeployments
         return deployment;
     }
 
-    private V1Probe? GetStartupProbe(PipelineService pipelineService) => GetProbe(pipelineService.StartupProbe, pipelineService);
+    private static V1Probe? GetStartupProbe(PipelineService pipelineService) => GetProbe("startup", pipelineService);
 
-    private V1Probe? GetReadinessProbe(PipelineService pipelineService) => GetProbe(pipelineService.Readiness, pipelineService);
+    private static V1Probe? GetReadinessProbe(PipelineService pipelineService) => GetProbe("readiness", pipelineService);
 
-    private V1Probe? GetLivenessProbe(PipelineService pipelineService) => GetProbe(pipelineService.Liveness, pipelineService);
+    private static V1Probe? GetLivenessProbe(PipelineService pipelineService) => GetProbe("liveness", pipelineService);
 
-    private static V1Probe? GetProbe(string? str, PipelineService pipelineService) =>
-        !string.IsNullOrWhiteSpace(str)
-            ? new V1Probe()
-            {
-                HttpGet = new V1HTTPGetAction()
-                {
-                    Port = pipelineService.ServicePort,
-                    Path = str,
-                },
-                FailureThreshold = 5,
-                InitialDelaySeconds = 3
-            }
+    private static V1Probe? GetProbe(string str, PipelineService pipelineService)
+    {
+        return pipelineService.HealthChecks.ContainsKey(str)
+            ? pipelineService.HealthChecks[str]
             : null;
+    }
 
     private static List<V1EnvVar> GetEnvVars(IEnumerable<EnvironmentVariable> environmentVariables)
     {
