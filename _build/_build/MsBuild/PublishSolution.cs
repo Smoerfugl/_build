@@ -11,7 +11,7 @@ public class PublishSolution : IPublishSolution
 {
     private const string OutputFolder = "output";
 
-    public Task Invoke(string projectFolder)
+    public async Task Invoke(string projectFolder)
     {
         var exists = Directory.Exists($"{OutputFolder}{Path.DirectorySeparatorChar}{projectFolder}");
         if (exists)
@@ -20,13 +20,16 @@ public class PublishSolution : IPublishSolution
         }
 
         Console.WriteLine("Publishing project: " + projectFolder);
-        new ShellProcessBuilder("dotnet")
+        var exitCode = await new ShellProcessBuilder("dotnet")
             .WithArgument("publish")
             .WithArgument("-c", "Release")
             .WithArgument(projectFolder)
             .WithArgument("-o", $"output/{projectFolder}")
             .Run();
 
-        return Task.CompletedTask;
+        if (exitCode != 0)
+        {
+            throw new ApplicationException($"Couldn't build {projectFolder} - check error log");
+        }
     }
 }
