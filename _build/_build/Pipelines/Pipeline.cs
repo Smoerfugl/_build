@@ -9,6 +9,7 @@ public class Pipeline
     public List<PipelineService> Services { get; init; } = new();
     public Dictionary<string, List<EnvironmentVariable>> EnvironmentVariables { get; init; } = new();
     public string Name { get; init; } = null!;
+    public bool Https { get; set; } = false;
 
     public List<EnvironmentVariable> GetVariables(Environment env)
     {

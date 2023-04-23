@@ -17,6 +17,7 @@ public class GenerateIngressListTests
         var pipeline = new Pipeline()
         {
             Registry = "some.registry",
+            Https = true,
             Name = "testSolution",
             Services = new List<PipelineService>()
             {
@@ -38,4 +39,36 @@ public class GenerateIngressListTests
         
         sut.Count.Should().Be(2);
     }
+    
+    [Theory]
+    [InlineData(true, 2)]
+    [InlineData(false, 1)]
+    public void GivenHttps_ShouldReturnRoutes(bool https, int count)
+    {
+        var pipeline = new Pipeline()
+        {
+            Registry = "some.registry",
+            Https = https,
+            Name = "testSolution",
+            Services = new List<PipelineService>()
+            {
+                new PipelineService()
+                {
+                    Project = "some-project",
+                    Replicas = 2,
+                    Name = "SomeProject",
+                    Hostname = "foo.bar.com",
+                    ServicePort = 80,
+                }
+            },
+            EnvironmentVariables = new Dictionary<string, List<EnvironmentVariable>>()
+        };
+
+        var env = Substitute.For<IEnv>();
+        env.Value.ReturnsForAnyArgs(Environment.Development);
+        var sut = new GenerateIngressRoutesList(env).Invoke(pipeline, "foo.com");
+        
+        sut.Count.Should().Be(count);
+    }
+    
 }

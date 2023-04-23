@@ -4,12 +4,12 @@ namespace Build.Kubernetes;
 
 public interface IGenerateIngressRoutes
 {
-    IEnumerable<IngressRoute> Invoke();
+    IEnumerable<IngressRoute> Invoke(Pipelines.Pipeline pipelineObject);
 }
 
 public class GenerateIngressRoutes : IGenerateIngressRoutes
 {
-    public IEnumerable<IngressRoute> Invoke()
+    public IEnumerable<IngressRoute> Invoke(Pipelines.Pipeline pipelineObject)
     {
         var @namespace = @Namespace;
         var web = new IngressRouteBuilder()
@@ -20,20 +20,29 @@ public class GenerateIngressRoutes : IGenerateIngressRoutes
             .WithHostname(Hostname)
             .WithMiddlewares(IngressRouteMiddleware.RedirectHttps())
             .Build();
-        var secure = new IngressRouteBuilder()
-            .WithName(Name)
-            .WithServiceName(ServiceName)
-            .WithPort(Port)
-            .WithEntrypoint(Entrypoint.WebSecure)
-            .WithNamespace(@namespace)
-            .WithHostname(Hostname)
-            .Build();
-
-        return new List<IngressRoute>()
+        if (!pipelineObject.Https)
         {
-            web,
-            secure
-        };
+            return new List<IngressRoute>()
+            {
+                web
+            };
+        }
+        else
+        {
+            var secure = new IngressRouteBuilder()
+                .WithName(Name)
+                .WithServiceName(ServiceName)
+                .WithPort(Port)
+                .WithEntrypoint(Entrypoint.WebSecure)
+                .WithNamespace(@namespace)
+                .WithHostname(Hostname)
+                .Build();
+            return new List<IngressRoute>()
+            {
+                web,
+                secure
+            };
+        }
     }
 
     public string ServiceName { get; set; } = null!;

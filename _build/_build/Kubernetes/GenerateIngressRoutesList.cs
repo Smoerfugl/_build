@@ -39,7 +39,7 @@ public class GenerateIngressRoutesList : IGenerateIngressRoutesList
                 Namespace = pipelineObject.GetNamespace(_env.Value),
                 Port = service.ServicePort,
                 ServiceName = service.Name
-            }.Invoke();
+            }.Invoke(pipelineObject);
 
             ingressRoutes.AddRange(routes);
         });
