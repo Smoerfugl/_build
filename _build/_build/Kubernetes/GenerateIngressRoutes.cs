@@ -1,3 +1,4 @@
+using Build.Extensions;
 using Build.Kubernetes.Builders;
 
 namespace Build.Kubernetes;
@@ -18,7 +19,9 @@ public class GenerateIngressRoutes : IGenerateIngressRoutes
             .WithEntrypoint(Entrypoint.Web)
             .WithNamespace(@Namespace)
             .WithHostname(Hostname)
-            .WithMiddlewares(IngressRouteMiddleware.RedirectHttps())
+            .When(pipelineObject.RedirectHttps,
+                builder => builder.WithMiddlewares(IngressRouteMiddleware.RedirectHttps())
+            )
             .Build();
         if (!pipelineObject.Https)
         {

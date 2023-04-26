@@ -10,6 +10,7 @@ public class Pipeline
     public Dictionary<string, List<EnvironmentVariable>> EnvironmentVariables { get; init; } = new();
     public string Name { get; init; } = null!;
     public bool Https { get; set; } = false;
+    public bool RedirectHttps { get; set; }
 
     public List<EnvironmentVariable> GetVariables(Environment env)
     {
