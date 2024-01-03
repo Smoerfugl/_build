@@ -14,9 +14,9 @@ public static class K8SYaml
         var list = objects.ToList();
         return SerializeToMultipleObjects(list);
     }
-    public static string SerializeToMultipleObjects<T>(List<T> objects)
+    public static string SerializeToMultipleObjects(IEnumerable<object> objects)
     {
-        var strings = objects.Select(d => KubernetesYaml.Serialize(d));
-        return string.Join("\n---\n", strings);
+        var yaml = KubernetesYaml.SerializeAll(objects);
+        return yaml;
     }
 }
