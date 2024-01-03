@@ -30,22 +30,20 @@ public class GenerateIngressRoutes : IGenerateIngressRoutes
                 web
             };
         }
-        else
+
+        var secure = new IngressRouteBuilder()
+            .WithName(Name)
+            .WithServiceName(ServiceName)
+            .WithPort(Port)
+            .WithEntrypoint(Entrypoint.WebSecure)
+            .WithNamespace(@namespace)
+            .WithHostname(Hostname)
+            .Build();
+        return new List<IngressRoute>()
         {
-            var secure = new IngressRouteBuilder()
-                .WithName(Name)
-                .WithServiceName(ServiceName)
-                .WithPort(Port)
-                .WithEntrypoint(Entrypoint.WebSecure)
-                .WithNamespace(@namespace)
-                .WithHostname(Hostname)
-                .Build();
-            return new List<IngressRoute>()
-            {
-                web,
-                secure
-            };
-        }
+            web,
+            secure
+        };
     }
 
     public string ServiceName { get; set; } = null!;
