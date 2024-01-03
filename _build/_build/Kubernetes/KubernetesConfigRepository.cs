@@ -1,16 +1,18 @@
 using System.Collections;
+using System.Text;
+using Spectre.Console;
 
 namespace Build.Kubernetes;
 
 public interface IKubernetesConfigRepository
 {
     void AddToManifesto(params object[] objects);
-    Task WriteToFile();
+    Task WriteToFile(string file);
     string Get();
 }
 public class KubernetesConfigRepository : IKubernetesConfigRepository
 {
-    private List<object> _objects = new();
+    private readonly List<object> _objects = new();
 
     public void AddToManifesto(params object[] objects)
     {
@@ -37,10 +39,11 @@ public class KubernetesConfigRepository : IKubernetesConfigRepository
         _objects.AddRange(collection);
     }
 
-    public async Task WriteToFile()
+    public async Task WriteToFile(string file = "kube.yml")
     {
-        var yaml = K8SYaml.SerializeToMultipleObjects(_objects);
-        await File.WriteAllTextAsync("kube.yml", yaml);
+        var yaml = K8SYaml.SerializeToMultipleObjects(_objects.AsEnumerable());
+        await File.WriteAllTextAsync(file, yaml, new UTF8Encoding(false));
+        AnsiConsole.WriteLine($"Saved to file {file}");
     }
 
     public string Get()

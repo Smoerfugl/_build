@@ -27,7 +27,7 @@ public class GenerateIngressRoutes : IGenerateIngressRoutes
         {
             return new List<IngressRoute>()
             {
-                web
+                web,
             };
         }
 

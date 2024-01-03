@@ -16,6 +16,7 @@ public class Commands : ICommands
     private readonly IGenerateDeployments _generateDeployments;
     private readonly IGenerateServices _generateServices;
     private readonly IKubernetesConfigRepository _kubernetesConfigRepository;
+    private readonly IIncludeFiles _includeFiles;
 
     public Commands(IGenerateIngressRoutesList generateIngressRoutesList,
         IGenerateCertificates generateCertificates,
@@ -24,7 +25,8 @@ public class Commands : ICommands
         IDomain domain,
         IGenerateDeployments generateDeployments,
         IGenerateServices generateServices,
-        IKubernetesConfigRepository kubernetesConfigRepository
+        IKubernetesConfigRepository kubernetesConfigRepository,
+        IIncludeFiles includeFiles
     )
     {
         _generateIngressRoutesList = generateIngressRoutesList;
@@ -35,6 +37,7 @@ public class Commands : ICommands
         _generateDeployments = generateDeployments;
         _generateServices = generateServices;
         _kubernetesConfigRepository = kubernetesConfigRepository;
+        _includeFiles = includeFiles;
     }
 
     public static Option<string> Tag = new(new[] { "--tag" }, "Tag to use for the build");
@@ -86,24 +89,21 @@ public class Commands : ICommands
                             await TaskRunner(ctx, () => _generateDeployments.Invoke(tagValue), "Generate deployments");
                         var services = await TaskRunner(ctx, () => _generateServices.Invoke(deployments),
                             "Generating services");
+                        var includedFiles = await TaskRunner(ctx, () => _includeFiles.Invoke(pipeline), "Include manifests");
 
                         _kubernetesConfigRepository.AddToManifesto(
                             ingressRoutes,
                             certificates,
                             @namespace,
                             deployments,
-                            services
+                            services,
+                            includedFiles
                         );
 
                         var file = context.ParseResult.GetValueForOption(File);
                         if (!string.IsNullOrWhiteSpace(file))
                         {
-                            await TaskRunner(ctx, async () => await _kubernetesConfigRepository.WriteToFile(),
-                                "Saving to file");
-                        }
-                        else
-                        {
-                            context.Console.Write(_kubernetesConfigRepository.Get());
+                            await TaskRunner(ctx, async () => await _kubernetesConfigRepository.WriteToFile(file), "Saving to file");
                         }
                     });
             });
