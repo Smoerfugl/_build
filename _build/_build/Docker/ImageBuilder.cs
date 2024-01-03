@@ -4,7 +4,7 @@ namespace Build.Docker;
 
 public interface IImageBuilder
 {
-    Task<ContainerTag?> BuildImage(ImageBuilderParams imageBuilderParams);
+    Task<ContainerTag?> BuildImage(ImageBuilderParams imageBuilderParams, CancellationToken cancellationToken);
 }
 
 public class ImageBuilderParams
@@ -24,7 +24,7 @@ public class ImageBuilderParams
 
 public class ImageBuilder : IImageBuilder
 {
-    public async Task<ContainerTag?> BuildImage(ImageBuilderParams imageBuilderParams)
+    public async Task<ContainerTag?> BuildImage(ImageBuilderParams imageBuilderParams, CancellationToken cancellationToken)
     {
         var processBuilder = new ShellProcessBuilder("docker");
 
@@ -39,7 +39,7 @@ public class ImageBuilder : IImageBuilder
             processBuilder.WithArgument($"--build-arg {d}")
         );
         
-        await processBuilder.Run();
+        await processBuilder.Run(cancellationToken);
         return new ContainerTag() { Name = imageName };
     }
 }

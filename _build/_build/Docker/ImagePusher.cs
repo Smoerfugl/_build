@@ -4,19 +4,19 @@ namespace Build.Docker;
 
 public interface IImagePusher
 {
-    Task Invoke(ContainerTag tag);
+    Task Invoke(ContainerTag tag, CancellationToken cancellationToken);
 }
 
 public class ImagePusher : IImagePusher
 {
-    public async Task Invoke(ContainerTag tag)
+    public async Task Invoke(ContainerTag tag, CancellationToken cancellationToken)
     {
         var processBuilder = new ShellProcessBuilder("docker");
 
         processBuilder
             .WithArgument($"push {tag.Name}");
 
-        await processBuilder.Run();
+        await processBuilder.Run(cancellationToken);
     }
 }
 

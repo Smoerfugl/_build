@@ -34,8 +34,12 @@ public class Commands : ICommands
         };
 
         command.SetHandler(
-            async (string tagValue, bool shouldPush) =>
+            async (context) =>
             {
+                var tagValue = context.ParseResult.GetValueForOption(Tag);
+                var shouldPush = context.ParseResult.GetValueForOption(Push);
+                var cancellationToken = context.GetCancellationToken();
+                
                 var pipeline = _getPipeline.Invoke();
                 var projects = pipeline.Services.Select(d => d.Project).ToList();
                 await AnsiConsole.Progress()
@@ -48,14 +52,10 @@ public class Commands : ICommands
                         {
                             var t = ctx.AddTask($"Publishing {project}");
                             t.IsIndeterminate = true;
-                            return _publishSolutions.Invoke(project)
-                                .ContinueWith(_ => t.Value = 100);
+                            return _publishSolutions.Invoke(project, cancellationToken);
                         });
 
-                        foreach (var publishTask in publishTasks)
-                        {
-                            await publishTask;
-                        }
+                        await Task.WhenAll(publishTasks);
 
                         var buildTasks = pipeline.Services.Select(service =>
                         {
@@ -69,7 +69,7 @@ public class Commands : ICommands
                             }
 
                             var imageBuild = _buildDockerImage
-                                .Invoke(pipeline.Registry, service.Project, service.Dockerfile, tagValue);
+                                .Invoke(pipeline.Registry, service.Project, service.Dockerfile, tagValue, cancellationToken);
 
                             imageBuild.ContinueWith(_ =>
                             {
@@ -88,7 +88,7 @@ public class Commands : ICommands
                             {
                                 var t = ctx.AddTask($"Pushing {image?.Name}");
                                 t.IsIndeterminate = true;
-                                var task = _imagePusher.Invoke(image!);
+                                var task = _imagePusher.Invoke(image!, cancellationToken);
                                 task.ContinueWith(_ =>
                                 {
                                     t.Value = 100;
@@ -100,7 +100,7 @@ public class Commands : ICommands
                             await Task.WhenAll(pushTasks);
                         }
                     });
-            }, Tag, Push);
+            });
 
         builder.Add(command);
     }

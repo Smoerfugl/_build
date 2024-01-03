@@ -24,7 +24,7 @@ public class ShellProcessBuilder
         return this;
     }
 
-    public Task<int> Run()
+    public async Task<int> Run(CancellationToken cancellationToken)
     {
         var process = Build();
         Console.WriteLine($"Running command {process.StartInfo.FileName} {process.StartInfo.Arguments}");
@@ -38,8 +38,8 @@ public class ShellProcessBuilder
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-        process.WaitForExit();
-        return Task.FromResult(process.ExitCode);
+        await process.WaitForExitAsync(cancellationToken);
+        return process.ExitCode;
     }
 
     public Process Build()
