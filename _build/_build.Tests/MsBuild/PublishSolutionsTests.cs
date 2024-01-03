@@ -1,3 +1,4 @@
+using System.Threading;
 using Build.MsBuild;
 using FluentAssertions;
 using Xunit;
@@ -11,7 +12,7 @@ public class PublishSolutionsTests
     public void ShouldPublishSolutions()
     {
         var sut = new PublishSolution();
-        sut.Invoking(d => d.Invoke("_build"))
+        sut.Invoking(d => d.Invoke("_build", new CancellationToken()))
             .Should().NotThrowAsync();
     }
 }

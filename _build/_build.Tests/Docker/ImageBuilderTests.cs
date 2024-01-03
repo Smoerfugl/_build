@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Build.Docker;
 using FluentAssertions;
@@ -22,7 +23,7 @@ public class BuildImageTests
     public async Task ImageBuilder_GivenDockerFile_ShouldBuildImage()
     {
         var imageBuilderParams = new ImageBuilderParams("helo", "latest", "Dockerfile");
-        var action = async () => await _imageBuilder.BuildImage(imageBuilderParams);
+        var action = async () => await _imageBuilder.BuildImage(imageBuilderParams, new CancellationToken());
 
         await action.Should().NotThrowAsync();
     }
@@ -35,7 +36,7 @@ public class BuildImageTests
             BuildArgs = new() { "PROJECT=test.dll" }
         };
 
-        var action = async () => await _imageBuilder.BuildImage(imageBuilderParams);
+        var action = async () => await _imageBuilder.BuildImage(imageBuilderParams, new CancellationToken());
 
         await action.Should().NotThrowAsync();
     }

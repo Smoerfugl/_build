@@ -2,12 +2,12 @@ namespace Build.Docker;
 
 public interface IBuildDockerImage
 {
-    Task<ContainerTag?> Invoke(string registry, string project, string dockerfile, string tag);
+    Task<ContainerTag?> Invoke(string registry, string project, string dockerfile, string tag, CancellationToken cancellationToken);
 }
 
 public class BuildDockerImage : IBuildDockerImage
 {
-    public async Task<ContainerTag?> Invoke(string registry, string project, string? dockerfile, string tag)
+    public async Task<ContainerTag?> Invoke(string registry, string project, string? dockerfile, string tag, CancellationToken cancellationToken)
     {
         if (dockerfile == null)
         {
@@ -22,7 +22,7 @@ public class BuildDockerImage : IBuildDockerImage
             {
                 $"PROJECT={project}"
             }
-        });
+        }, cancellationToken);
 
         return imageName;
     }

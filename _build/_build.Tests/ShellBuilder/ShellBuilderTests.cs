@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using _build.Tests.Docker;
 using Build.ShellBuilder;
@@ -18,6 +19,6 @@ public class ShellBuilderTests
     {
         await new ShellProcessBuilder("echo")
             .WithArgument("Hello World")
-            .Run();
+            .Run(cancellationToken:CancellationToken.None);
     }
 }
