@@ -53,7 +53,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: artifacts
           path: /tmp/TestResults
@@ -63,7 +63,7 @@ jobs:
         working-directory: ${{ env.SLNPATH }}
 
       - name: Upload .pkg artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget
           path: /tmp/nuget
