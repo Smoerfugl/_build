@@ -83,7 +83,6 @@ jobs:
         with:
           name: nuget
           path: nuget
-          if-no-files-found: error
 
       - name: Push to nuget.org
         run: |
