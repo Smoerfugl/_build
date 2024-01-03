@@ -12,6 +12,8 @@ public class Pipeline
     public bool Https { get; set; } = false;
     public bool RedirectHttps { get; set; }
 
+    public List<string> IncludedFiles { get; set; } = new();
+
     public List<EnvironmentVariable> GetVariables(Environment env)
     {
         var environmentVariableKey =
