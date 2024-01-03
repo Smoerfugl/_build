@@ -82,6 +82,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: nuget
+          path: nuget
+          if-no-files-found: error
 
       - name: Push to nuget.org
         run: |
